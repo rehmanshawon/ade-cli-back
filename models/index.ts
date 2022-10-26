@@ -1,5 +1,6 @@
 export * from "./blogs";
 export * from "./cars";
+export * from "./crucks";
 export * from "./players";
 export * from "./posts";
 export * from "./sequelizemeta";

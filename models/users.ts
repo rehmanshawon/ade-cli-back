@@ -6,16 +6,16 @@ export class users extends Model {
     id?: number;
     @Column({ type: DataType.STRING(255) })
     name!: string;
-    @Column({ type: DataType.TINYINT, defaultValue: "1" })
-    is_active?: number;
-    @Column({ allowNull: true, type: DataType.INTEGER })
-    created_by?: number;
-    @Column({ allowNull: true, type: DataType.INTEGER })
-    updated_by?: number;
-    @Column({ type: DataType.DATE })
-    created_at!: Date;
-    @Column({ allowNull: true, type: DataType.DATE })
-    updated_at?: Date;
-    @Column({ allowNull: true, type: DataType.DATE })
-    deleted_at?: Date;
+    @Column({ type: DataType.STRING(255) })
+    email!: string;
+    @Column({ type: DataType.STRING(255) })
+    password!: string;
+    @Column({ type: DataType.ENUM('male','female') })
+    gender!: string;
+    @Column({ type: DataType.ENUM('admin','user') })
+    role!: string;
+    @Column({ field: "createdAt", type: DataType.DATE })
+    createdat!: Date;
+    @Column({ field: "updatedAt", type: DataType.DATE })
+    updatedat!: Date;
 }

@@ -2,20 +2,24 @@
 'use strict';
 module.exports = {
             async up (queryInterface, Sequelize) {
-                await queryInterface.createTable('blogs', {
-                    id:{
+                await queryInterface.createTable('user_modules', {
+                    user_id:{
                     type:Sequelize.INTEGER,
-                    allowNull:false,
-                    autoIncrement:true,                
-                    unique:true,
-                    primaryKey:true,                                
+                    allowNull:false,                               
+                    primaryKey:true,
+                    references: {
+                      model: 'users',
+                      key: 'user_id',
+                    },                                   
                 },
-					blogTitle:{
-                    type:Sequelize.STRING,
-                    allowNull:false,
-                    autoIncrement:false,                
-                    unique:false,
-                    primaryKey:false,                                
+					module_id:{
+                    type:Sequelize.INTEGER,
+                    allowNull:false,                               
+                    primaryKey:true,
+                    references: {
+                      model: 'modules',
+                      key: 'module_id',
+                    },                                   
                 },
 					isActive: {
             field: 'is_active',
@@ -52,6 +56,6 @@ module.exports = {
             },
 
             async down (queryInterface, Sequelize) {
-                await queryInterface.dropTable('blogs');
+                await queryInterface.dropTable('user_modules');
             }
         };

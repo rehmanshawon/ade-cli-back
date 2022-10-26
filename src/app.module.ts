@@ -12,6 +12,7 @@ import { SysRole } from './modules/sys_roles/models/sys-roles.model';
 import { CreateTableModule } from './helpers/create-table/create-table.module';
 import { UsersService } from './modules/sys-users/sys-users.service';
 //import { DatabaseModule } from './core/database/database.module';
+import { TeamsModule } from './modules/teams/teams.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -34,6 +35,7 @@ import { UsersService } from './modules/sys-users/sys-users.service';
     AuthModule,
     SysRolesModule,
     CreateTableModule,
+    TeamsModule,
    // DatabaseModule,    
   ],
   controllers: [AppController],

@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo } from "sequelize-typescript";
 import { sys_roles } from "./sys_roles";
 
