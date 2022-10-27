@@ -1,6 +1,19 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable prettier/prettier */
 import { ApiProperty } from '@nestjs/swagger';
-//import { IsString, MinLength, MaxLength, IsBoolean, IsArray } from 'class-validator';
+
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsDecimal,
+  IsDate,
+  IsUUID,
+  Min,
+  Max,
+} from 'class-validator';
+import { Transform } from 'class-transformer';
 
 class referenceDefinition {
   relation: string; //1:1, 1:N, N:N
@@ -12,14 +25,46 @@ class referenceDefinition {
 }
 
 class fieldDefinition {
+  @IsString()
   field: string;
-  type: string;
-  unique: boolean;
-  optional: boolean;
-  autoIncrement: boolean;
-  default: string;
-  primaryKey: boolean;
-  foreignKey: boolean;
+
+  @IsString()
+  @IsOptional()
+  type: string = 'string';
+
+  @IsBoolean()
+  @IsOptional()
+  unique: boolean = false;
+
+  @IsBoolean()
+  @IsOptional()
+  optional: boolean = true;
+
+  @IsBoolean()
+  @IsOptional()
+  autoIncrement: boolean = false;
+
+  @IsString()
+  @IsOptional()
+  default: any = null;
+
+  @IsNumber()
+  @IsOptional()
+  minLength: number = 0;
+
+  @IsNumber()
+  @IsOptional()
+  maxLength: number = 0;
+
+  @IsBoolean()
+  @IsOptional()
+  primaryKey: boolean = false;
+
+  @IsBoolean()
+  @IsOptional()
+  foreignKey: boolean = false;
+
+  @IsOptional()
   reference: referenceDefinition;
 }
 

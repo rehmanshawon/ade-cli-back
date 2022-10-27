@@ -6,10 +6,10 @@ import { UsersController } from './sys-users.controller';
 import { UsersService } from './sys-users.service';
 
 @Module({
-    imports: [SequelizeModule.forFeature([SysUser])],
-    providers: [UsersService],
+  imports: [SequelizeModule.forFeature([SysUser])],
+  providers: [UsersService],
   controllers: [UsersController],
-    // export it to use it outside this module
-    exports: [SequelizeModule, UsersService],
+  // export it to use it outside this module
+  exports: [SequelizeModule, UsersService],
 })
 export class UserModule {}
