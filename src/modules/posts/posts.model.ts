@@ -11,6 +11,9 @@ import { users } from 'src/modules/users/users.model';
 	@Column({type: DataType.STRING, unique: false})
 	title!: string;
 
+	@Column({type: DataType.STRING, unique: false})
+	body!: string;
+
     	@Column({type: DataType.BOOLEAN})
 	is_active!: boolean;
 

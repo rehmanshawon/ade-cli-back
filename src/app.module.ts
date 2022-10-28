@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SysRolesModule } from './modules/sys_roles/sys_roles.module';
 import { SysRole } from './modules/sys_roles/models/sys-roles.model';
 import { CreateTableModule } from './helpers/create-table/create-table.module';
+import { SampleModule } from './modules/sample/sample.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { CreateTableModule } from './helpers/create-table/create-table.module';
     AuthModule,
     SysRolesModule,
     CreateTableModule,
+    SampleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

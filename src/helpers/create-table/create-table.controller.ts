@@ -30,7 +30,7 @@ export class CreateTableController {
     const ModulePath: any = await this.createTableService.createUserModule(
       table,
     );
-    res.write('Create module done');
+    // res.write('Create module done');
     res.write(`Creating model ${table.tableName}. Wait!`);
     const modelPath: any = await this.createTableService.createModel(table);
     res.end('create model done');
