@@ -12,18 +12,14 @@ import {
   MinLength,
 } from 'class-validator'
 ;
-export class CreateusersDto {
+export class CreatePostsDto {
 @IsString()
-name:string;
+title:string;
 
 @IsString()
-email:string;
+body:string;
 
-@IsString()
-password:string;
-
-@IsString()
-@IsOptional()
-gender:string;
+@IsNumber()
+user_id:number;
 
 }

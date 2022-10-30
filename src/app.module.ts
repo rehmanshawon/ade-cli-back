@@ -12,6 +12,10 @@ import { SysRolesModule } from './modules/sys_roles/sys_roles.module';
 import { SysRole } from './modules/sys_roles/models/sys-roles.model';
 import { CreateTableModule } from './helpers/create-table/create-table.module';
 import { SampleModule } from './modules/sample/sample.module';
+import { UsersModule } from './modules/users/users.module';
+import { Users } from './modules/users/users.model';
+import { Posts } from './modules/posts/posts.model';
+import { HelpersModule } from './helpers/helpers/helpers.module';
 
 @Module({
   imports: [
@@ -32,13 +36,15 @@ import { SampleModule } from './modules/sample/sample.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [SysUser, SysRole],
+      models: [SysUser, SysRole, Users, Posts],
     }),
+
     UserModule,
     AuthModule,
     SysRolesModule,
     CreateTableModule,
     SampleModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

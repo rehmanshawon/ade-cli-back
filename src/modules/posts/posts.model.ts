@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
 import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo, HasMany, HasOne, BelongsToMany } from 'sequelize-typescript';
-import { users } from 'src/modules/users/users.model';
+import { Users } from 'src/modules/users/users.model';
 
 	@Table({tableName: 'posts',timestamps: false,comment: ""})
-	export class posts extends Model {
+	export class Posts extends Model {
 	@Column({primaryKey: true, autoIncrement: true,type: DataType.INTEGER})
 	@Index({name: "PRIMARY", using: "BTREE", order: "ASC", unique: true})
 	post_id?: number;
@@ -32,13 +32,13 @@ import { users } from 'src/modules/users/users.model';
 	@Column({type: DataType.DATE})
 	deleted_at?: Date;
 
-	@ForeignKey(() => users)
+	@ForeignKey(() => Users)
 	@Column({                                  
 	type: DataType.INTEGER
 	})
 	user_id?: number;
 
-	@BelongsTo(() => users)
-	user?: users;
+	@BelongsTo(() => Users)
+	user?: Users;
 
     }

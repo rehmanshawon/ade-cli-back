@@ -175,6 +175,7 @@ export class CreateTableService {
     // create the model
     // update the app.module
     const { tableName, fieldList } = table;
+    const modelName = await this.capitalizeFirstLetter(tableName);
     const modulePath = `./src/modules/${tableName}`;
     if (!this.checkIfFileOrDirectoryExists(modulePath)) {
       fs.mkdirSync(modulePath);
@@ -196,7 +197,7 @@ import {
 } from 'class-validator'\n;
 `;
 
-    let createDtoData = `export class Create${tableName}Dto {\n`;
+    let createDtoData = `export class Create${modelName}Dto {\n`;
 
     let dtoFieldString = '';
 
@@ -234,7 +235,7 @@ import {
     }
     createDtoData += dtoFieldString;
 
-    const dtoName = `${tableName}.dto.ts`;
+    const dtoName = `create-${tableName}.dto.ts`;
     await this.createUserDto(
       dtoName,
       dtoImportSring + createDtoData + '}',
@@ -305,6 +306,7 @@ import {
     let belongsToManyString = '';
 
     const { tableName, fieldList } = createTableDto;
+    const modelName = await this.capitalizeFirstLetter(tableName);
     // check if any key is a primary key.
     for (let i = 0; i < fieldList.length; i++) {
       const fieldType = await this.returnColumnFieldType(fieldList[i].type);
@@ -322,34 +324,36 @@ import {
       if (fieldList[i].foreignKey) {
         // now the reference has all the relationship info
         const foreignTable = fieldList[i].reference.right_table;
+        const foreignModel = await this.capitalizeFirstLetter(foreignTable);
         const foreignKey = fieldList[i].reference.right_table_key;
         const thisTable = fieldList[i].reference.left_table;
+        const thisModel = await this.capitalizeFirstLetter(thisTable);
         const thisTableKey = fieldList[i].reference.left_table_key;
 
         // so there is a module in the src path under same name
         // and there is a model under same name in the model folder inside module folder
-        importModelString += `import { ${foreignTable} } from 'src/modules/${foreignTable}/${foreignTable}.model';\n`;
+        importModelString += `import { ${foreignModel} } from 'src/modules/${foreignTable}/${foreignTable}.model';\n`;
         // import adding is done
         // now check the relationship style.
         // firstcheck if it's one to many
         if (fieldList[i].reference.relation.toLowerCase() === '1:n') {
           // console.log('202', fieldList[i].reference);
           foreignKeyString += `
-\t@ForeignKey(() => ${foreignTable})
+\t@ForeignKey(() => ${foreignModel})
 \t@Column({                                  
 \ttype: ${fieldType}
 \t})
 \t${foreignKey}?: ${fieldList[i].type};\n`;
           belongsToString += `
-\t@BelongsTo(() => ${foreignTable})
-\t${foreignKey.split('_')[0]}?: ${foreignTable};\n`;
+\t@BelongsTo(() => ${foreignModel})
+\t${foreignKey.split('_')[0]}?: ${foreignModel};\n`;
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file
-          foriegnTableImportModelString = `import { ${thisTable} } from 'src/modules/${thisTable}/${thisTable}.model';\n`;
+          foriegnTableImportModelString = `import { ${thisModel} } from 'src/modules/${thisTable}/${thisTable}.model';\n`;
           // now define the column that will indicate the association
           HasManyString = `
-\t@HasMany(() => ${thisTable})
-\t${thisTable}?: ${thisTable}[];\n`;
+\t@HasMany(() => ${thisModel})
+\t${thisTable}?: ${thisModel}[];\n`;
           // we need to update the foreign table right now, because the
           // foreign key may point to a different table
           await this.insertAtLine(
@@ -369,15 +373,15 @@ import {
         if (fieldList[i].reference.relation.toLowerCase() === '1:1') {
           // in this case foreignKey atttribute should be added before the primaryKey column
           const tempStr = primaryKeyString;
-          primaryKeyString = `@ForeignKey(() => ${foreignTable})\n`;
+          primaryKeyString = `@ForeignKey(() => ${foreignModel})\n`;
           primaryKeyString += tempStr;
           // now define the belongs to assosiation
           belongsToString += `
-          @BelongsTo(() => ${foreignTable})
-          ${foreignTable}?: ${foreignTable};\n`;
+          @BelongsTo(() => ${foreignModel})
+          ${foreignKey.split('_')[0]}?: ${foreignModel};\n`;
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file
-          foriegnTableImportModelString += `import { ${thisTable} } from 'src/modules/${thisTable}/models/${thisTable}.model';\n`;
+          foriegnTableImportModelString += `import { ${thisModel} } from 'src/modules/${thisTable}/models/${thisTable}.model';\n`;
           // add the primary key of this model to foreign model
           foreignTableForeignKeyString += `
           @Column({            
@@ -392,14 +396,14 @@ import {
           ${thisTableKey}!: number;\n`;
           // defing hasone association
           HasOneString += `
-          @HasOne(() => ${thisTable})
-          ${thisTable}?: ${thisTable};\n`;
+          @HasOne(() => ${thisModel})
+          ${thisTable}?: ${thisModel};\n`;
           //done
         }
         if (fieldList[i].reference.relation.toLowerCase() === 'm:n') {
           // console.log('202', fieldList[i].reference);
           foreignKeyString += `
-\t@ForeignKey(() => ${foreignTable})
+\t@ForeignKey(() => ${foreignModel})
 \t@Column({                                  
 \ttype: ${fieldType}
 \t})
@@ -411,14 +415,15 @@ import {
 \t})
 \t${foreignKey}?: ${fieldList[i].type};\n`;
           const joinTable = fieldList[i].reference.join_table;
+          const joinModel = await this.capitalizeFirstLetter(joinTable);
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file
-          foriegnTableImportModelString = `import { ${thisTable} } from 'src/modules/${thisTable}/${thisTable}.model';\n`;
-          foriegnTableImportModelString += `import { ${joinTable} } from 'src/modules/${joinTable}/${joinTable}.model';\n`;
+          foriegnTableImportModelString = `import { ${thisModel} } from 'src/modules/${thisTable}/${thisTable}.model';\n`;
+          foriegnTableImportModelString += `import { ${joinModel} } from 'src/modules/${joinTable}/${joinTable}.model';\n`;
           // now define the column that will indicate the association
           belongsToManyString = `
-\t@BelongsToMany(() => ${joinTable}, () => ${thisTable})
-\t${joinTable}?: ${joinTable}[];\n`;
+\t@BelongsToMany(() => ${joinModel}, () => ${thisModel})
+\t${joinTable}?: ${joinModel}[];\n`;
           // we need to update the foreign table right now, because the
           // foreign key may point to a different table
           await this.insertAtLine(
@@ -472,7 +477,7 @@ import {
     const tableDecorationString = `\n\t@Table({tableName: '${tableName}',timestamps: false,comment: ""})\n`;
 
     data += tableDecorationString;
-    const exportModelString = `\texport class ${tableName} extends Model {\n`;
+    const exportModelString = `\texport class ${modelName} extends Model {\n`;
 
     data += exportModelString;
 
@@ -638,6 +643,10 @@ import {
   checkIfFileOrDirectoryExists = (path: string): boolean => {
     return fs.existsSync(path);
   };
+
+  async capitalizeFirstLetter(word: string) {
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }
 
   tableToModel = async () => {
     const config: IConfig = {
