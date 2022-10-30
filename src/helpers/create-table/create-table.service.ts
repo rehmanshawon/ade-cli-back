@@ -26,8 +26,11 @@ import {
   T_STRING,
   T_UUID,
 } from '../constants/constants';
+import { HelpersService } from '../helpers/helpers.service';
 @Injectable()
 export class CreateTableService {
+  constructor(private helpers: HelpersService) {}
+
   async createTable(createTableDto: CreateTableDto) {
     const { tableName, fieldList } = createTableDto;
     // console.log(tableName, fieldList);
@@ -62,7 +65,7 @@ export class CreateTableService {
         defValue = '';
       }
       if (fieldList[i].primaryKey) {
-        fieldListString += `${fieldList[i].field}:{
+        fieldListString += `id:{
                     type:${fieldType},
                     allowNull:false,
                     autoIncrement:true,                
@@ -150,7 +153,7 @@ export class CreateTableService {
                 await queryInterface.dropTable('${tableName}');
             }
         };`;
-    const newMigration = await this.createFile(
+    const newMigration = await this.helpers.createFile(
       './src/database/migrations/',
       migrationFile,
       data,
@@ -165,7 +168,7 @@ export class CreateTableService {
     return createTableDto;
   }
 
-  async createUserModule(table: CreateTableDto) {
+  async createUserModule(table: CreateTableDto, association: string[]) {
     // first create a directory under module name inside the modules folder
     // then create a dto folder inside it
     // create two dto - called create-modelname-dto and update-modelname-dto inside it
@@ -175,9 +178,9 @@ export class CreateTableService {
     // create the model
     // update the app.module
     const { tableName, fieldList } = table;
-    const modelName = await this.capitalizeFirstLetter(tableName);
+    const modelName = await this.helpers.capitalizeFirstLetter(tableName);
     const modulePath = `./src/modules/${tableName}`;
-    if (!this.checkIfFileOrDirectoryExists(modulePath)) {
+    if (!this.helpers.checkIfFileOrDirectoryExists(modulePath)) {
       fs.mkdirSync(modulePath);
     }
     const dtoPath = modulePath + '/dto/';
@@ -235,31 +238,213 @@ import {
     }
     createDtoData += dtoFieldString;
 
-    const dtoName = `create-${tableName}.dto.ts`;
+    const createDto = `create-${tableName}.dto.ts`;
     await this.createUserDto(
-      dtoName,
+      createDto,
       dtoImportSring + createDtoData + '}',
       dtoPath,
     );
 
-    // await this.createUserService(tableName, 'data', modulePath);
-    // await this.createUserController(tableName, 'data', modulePath);
-    // const { stdout } = await promisify(exec)(
-    //   `nest g resource /modules/${tableName} --no-spec`,
-    //   { shell: 'powershell.exe' },
-    // );
-    // return { moduleDetails: stdout };
-    // const data = `/* eslint-disable prettier/prettier */\n`;
-    // const newModule = await this.createFile(
-    //   `./src/modules/${moduleName}/`,
-    //   `${moduleName}-module.ts`,
-    //   data,
-    // );
+    // for now let's create and update dto same
+    const updateDtoData = `/* eslint-disable prettier/prettier */
+import { PartialType } from '@nestjs/swagger';
+import { Create${modelName}Dto } from './create-${tableName}.dto';
+export class Update${modelName}Dto extends PartialType(Create${modelName}Dto) {}
+    `;
+    const updateDto = `update-${tableName}.dto.ts`;
+    await this.createUserDto(updateDto, updateDtoData, dtoPath);
+
+    //now lets write the crud service file on the model
+    let serviceFileData = `/* eslint-disable prettier/prettier */
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import sequelize from 'sequelize';
+import { HelpersService } from 'src/helpers/helpers/helpers.service';
+import { ${modelName} } from './${tableName}.model';
+import { Create${modelName}Dto } from './dto/create-${tableName}.dto';
+import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
+`;
+    for (let i = 0; i < association.length; i++) {
+      const impModelString = `import { ${
+        association[i]
+      } } from 'src/modules/${association[i].toLowerCase()}/${association[
+        i
+      ].toLowerCase()}.model';\n`;
+      serviceFileData += impModelString;
+    }
+    const arrayOfIncludes = association.map((m) => `{model:${m}}`);
+    serviceFileData +=
+      `@Injectable()
+      export class ${modelName}Service {
+        constructor(
+          @InjectModel(${modelName})
+          private ${tableName}: typeof ${modelName},
+          private helpers: HelpersService,
+        ) {}
+        create(create${modelName}Dto: Create${modelName}Dto, payload: any) {
+          return this.${tableName}.create({
+            ...create${modelName}Dto,
+            created_at: sequelize.fn('NOW'),
+            created_by: payload.sub,
+          });
+        }
+
+    async findAll(page: number, size: number, field: string, search: string) {
+      const condition = field
+        ? { [field]: { [sequelize.Op.like]:` +
+      '`%${search}%`' +
+      ` } }
+        : null;
+      const { limit, offset } = this.helpers.getPagination(page, size);
+      const data = await this.${tableName}.findAndCountAll({        
+        order: [['id', 'DESC']],
+        include: [${arrayOfIncludes}],
+        where: condition,
+        limit,
+        offset,
+      });
+      const response = this.helpers.getPagingData(data, page, limit);
+      return response;
+    }
+
+    findOne(id: number) {
+      return this.${tableName}.findOne({
+        where: {
+          id,
+        },
+        include: [${arrayOfIncludes}],
+      });
+    }
+
+  async update(id: number, update${modelName}Dto: Update${modelName}Dto,payload: any) {
+    const result = await this.${tableName}.update(
+      { 
+        ...update${modelName}Dto,
+        updated_at: sequelize.fn('NOW'),
+        updated_by: payload.sub,
+       },
+      { where: { id }, returning: true },
+    );
+
+    return result;
+  }
+
+  async remove(id: number) {
+    return await this.${tableName}.update(
+      {
+          is_active: 0,
+          deleted_at: sequelize.fn('NOW'),
+        },
+        { where: { id } },
+      );
+    }
+  }
+  \n`;
+
+    await this.createUserService(
+      tableName,
+      serviceFileData,
+      modulePath,
+      association,
+    );
+
+    // creating service is done. Now let's write the controller file
+
+    const controllerFileData = `/* eslint-disable prettier/prettier */
+    import {
+  Controller,
+  Get,
+  Post,
+  Request,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
+import { JwtAuthGuard } from '../sys-auth/jwt-auth.guard';
+import { ${modelName}Service } from './${tableName}.service';
+import { Create${modelName}Dto } from './dto/create-${tableName}.dto';
+import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
+
+@Controller('${tableName}')
+export class ${modelName}Controller {
+  constructor(private readonly ${tableName}Service: ${modelName}Service) {}
+
+    @UseGuards(JwtAuthGuard)
+    @Post()
+    create(@Body() create${modelName}Dto: Create${modelName}Dto, @Request() req) {
+      return this.${tableName}Service.create(create${modelName}Dto, req.user);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get()
+    async findAll(@Request() req) {
+      const { page, size, field, search } = req.query;
+
+      return await this.${tableName}Service.findAll(page, size, field, search);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+      return this.${tableName}Service.findOne(+id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch(':id')
+    update(
+      @Param('id') id: string,
+      @Body() update${modelName}Dto: Update${modelName}Dto,
+      @Request() req,
+    ) {
+      return this.${tableName}Service.update(+id, update${modelName}Dto, req.user);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete(':id')
+    remove(@Param('id') id: string) {
+      return this.${tableName}Service.remove(+id);
+    }
+
+  }
+    `;
+    // write the controller
+    await this.createUserController(tableName, controllerFileData, modulePath);
+
+    // now, lets write the module to import the crud controller and service
+
+    const moduleFileData = `/* eslint-disable prettier/prettier */
+import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { HelpersModule } from 'src/helpers/helpers/helpers.module';
+import { ${modelName}Controller } from './${tableName}.controller';
+import { ${modelName}Service } from './${tableName}.service';
+import { ${modelName} } from './${tableName}.model';
+
+@Module({
+  imports: [SequelizeModule.forFeature([${modelName}]), HelpersModule],
+  providers: [${modelName}Service],
+  controllers: [${modelName}Controller],
+})
+export class ${modelName}Module {}
+    `;
+
+    const newModule = await this.helpers.createFile(
+      `./src/modules/${tableName}/`,
+      `${tableName}.module.ts`,
+      moduleFileData,
+    );
+    //await this.addModelToApp(modelName);
     // return { ModulePath: newModule };
   }
 
   async createUserDto(dtoName: string, dtoData: string, dtoPath: string) {
-    const newDto = await this.createFile(dtoPath, `${dtoName}`, dtoData);
+    const newDto = await this.helpers.createFile(
+      dtoPath,
+      `${dtoName}`,
+      dtoData,
+    );
     return { DtoPath: newDto };
   }
 
@@ -267,12 +452,14 @@ import {
     serviceName: string,
     serviceData: string,
     servicePath: string,
+    associateTable: string[],
   ) {
-    const newService = await this.createFile(
+    const newService = await this.helpers.createFile(
       servicePath,
       `${serviceName}.service.ts`,
       serviceData,
     );
+
     return { ServicePath: newService };
   }
 
@@ -281,7 +468,7 @@ import {
     controllerData: string,
     controllerPath: string,
   ) {
-    const newController = await this.createFile(
+    const newController = await this.helpers.createFile(
       controllerPath,
       `${controllerName}.controller.ts`,
       controllerData,
@@ -290,6 +477,8 @@ import {
   }
 
   async createModel(createTableDto: CreateTableDto) {
+    const belongsTo = [];
+    const has = [];
     let data = `/* eslint-disable prettier/prettier */\n`;
     data += `import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo, HasMany, HasOne, BelongsToMany } from 'sequelize-typescript';\n`;
     let primaryKeyString = '';
@@ -306,13 +495,14 @@ import {
     let belongsToManyString = '';
 
     const { tableName, fieldList } = createTableDto;
-    const modelName = await this.capitalizeFirstLetter(tableName);
+    const modelName = await this.helpers.capitalizeFirstLetter(tableName);
     // check if any key is a primary key.
     for (let i = 0; i < fieldList.length; i++) {
       const fieldType = await this.returnColumnFieldType(fieldList[i].type);
       const fieldName = fieldList[i].field;
       if (fieldList[i].primaryKey) {
-        const primaryKey = fieldList[i].field;
+        //const primaryKey = fieldList[i].field;
+        const primaryKey = 'id';
         primaryKeyString += `\t@Column({primaryKey: true, autoIncrement: true,type: ${D_INT}})
 \t@Index({name: "PRIMARY", using: "BTREE", order: "ASC", unique: true})
 \t${primaryKey}?: number;\n`;
@@ -324,10 +514,12 @@ import {
       if (fieldList[i].foreignKey) {
         // now the reference has all the relationship info
         const foreignTable = fieldList[i].reference.right_table;
-        const foreignModel = await this.capitalizeFirstLetter(foreignTable);
+        const foreignModel = await this.helpers.capitalizeFirstLetter(
+          foreignTable,
+        );
         const foreignKey = fieldList[i].reference.right_table_key;
         const thisTable = fieldList[i].reference.left_table;
-        const thisModel = await this.capitalizeFirstLetter(thisTable);
+        const thisModel = await this.helpers.capitalizeFirstLetter(thisTable);
         const thisTableKey = fieldList[i].reference.left_table_key;
 
         // so there is a module in the src path under same name
@@ -343,32 +535,42 @@ import {
 \t@Column({                                  
 \ttype: ${fieldType}
 \t})
-\t${foreignKey}?: ${fieldList[i].type};\n`;
+\t${thisTableKey}?: ${fieldList[i].type};\n`;
           belongsToString += `
 \t@BelongsTo(() => ${foreignModel})
-\t${foreignKey.split('_')[0]}?: ${foreignModel};\n`;
+\t${thisTableKey.split('_')[0]}?: ${foreignModel};\n`;
+          belongsTo.push(foreignModel); // for inclusion in sequelize crud service
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file
+
           foriegnTableImportModelString = `import { ${thisModel} } from 'src/modules/${thisTable}/${thisTable}.model';\n`;
           // now define the column that will indicate the association
           HasManyString = `
 \t@HasMany(() => ${thisModel})
 \t${thisTable}?: ${thisModel}[];\n`;
+          has.push(thisModel); // for inclusion in crud service
           // we need to update the foreign table right now, because the
           // foreign key may point to a different table
-          await this.insertAtLine(
-            `src/modules/${foreignTable}/${foreignTable}.model.ts`,
-            1,
-            foriegnTableImportModelString,
-          );
-          const foreignModelFileTotalLine = await this.getTotalLine(
-            `src/modules/${foreignTable}/${foreignTable}.model.ts`,
-          );
-          await this.insertAtLine(
-            `src/modules/${foreignTable}/${foreignTable}.model.ts`,
-            foreignModelFileTotalLine - 2,
-            HasManyString,
-          );
+          if (
+            !this.helpers.checkFileForAString(
+              `src/modules/${foreignTable}/${foreignTable}.model.ts`,
+              `${thisTable}.model`,
+            )
+          ) {
+            await this.helpers.insertAtLine(
+              `src/modules/${foreignTable}/${foreignTable}.model.ts`,
+              1,
+              foriegnTableImportModelString,
+            );
+            const foreignModelFileTotalLine = await this.helpers.getTotalLine(
+              `src/modules/${foreignTable}/${foreignTable}.model.ts`,
+            );
+            await this.helpers.insertAtLine(
+              `src/modules/${foreignTable}/${foreignTable}.model.ts`,
+              foreignModelFileTotalLine - 2,
+              HasManyString,
+            );
+          }
         } // 1:N relatioship is done
         if (fieldList[i].reference.relation.toLowerCase() === '1:1') {
           // in this case foreignKey atttribute should be added before the primaryKey column
@@ -378,7 +580,8 @@ import {
           // now define the belongs to assosiation
           belongsToString += `
           @BelongsTo(() => ${foreignModel})
-          ${foreignKey.split('_')[0]}?: ${foreignModel};\n`;
+          ${thisTableKey.split('_')[0]}?: ${foreignModel};\n`;
+          belongsTo.push(foreignModel);
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file
           foriegnTableImportModelString += `import { ${thisModel} } from 'src/modules/${thisTable}/models/${thisTable}.model';\n`;
@@ -398,6 +601,7 @@ import {
           HasOneString += `
           @HasOne(() => ${thisModel})
           ${thisTable}?: ${thisModel};\n`;
+          has.push(thisModel);
           //done
         }
         if (fieldList[i].reference.relation.toLowerCase() === 'm:n') {
@@ -415,7 +619,7 @@ import {
 \t})
 \t${foreignKey}?: ${fieldList[i].type};\n`;
           const joinTable = fieldList[i].reference.join_table;
-          const joinModel = await this.capitalizeFirstLetter(joinTable);
+          const joinModel = await this.helpers.capitalizeFirstLetter(joinTable);
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file
           foriegnTableImportModelString = `import { ${thisModel} } from 'src/modules/${thisTable}/${thisTable}.model';\n`;
@@ -426,15 +630,15 @@ import {
 \t${joinTable}?: ${joinModel}[];\n`;
           // we need to update the foreign table right now, because the
           // foreign key may point to a different table
-          await this.insertAtLine(
+          await this.helpers.insertAtLine(
             `src/modules/${foreignTable}/${foreignTable}.model.ts`,
             1,
             foriegnTableImportModelString,
           );
-          const foreignModelFileTotalLine = await this.getTotalLine(
+          const foreignModelFileTotalLine = await this.helpers.getTotalLine(
             `src/modules/${foreignTable}/${foreignTable}.model.ts`,
           );
-          await this.insertAtLine(
+          await this.helpers.insertAtLine(
             `src/modules/${foreignTable}/${foreignTable}.model.ts`,
             foreignModelFileTotalLine - 2,
             belongsToManyString,
@@ -493,13 +697,23 @@ import {
 
     // the data variable now has everything for the model file of this table
     // let's create a module folder under the same name, and write the model file inside it.
-    const newModel = await this.createFile(
+    if (!this.helpers.checkIfFileOrDirectoryExists(tableName)) {
+      fs.mkdirSync(tableName);
+    }
+    const newModel = await this.helpers.createFile(
       `./src/modules/${tableName}/`,
       `${tableName}.model.ts`,
       data,
     );
+    const result = await this.helpers.getBelongsTo(
+      `src/modules/${tableName}/${tableName}.model.ts`,
+    );
 
-    return { modelPath: newModel };
+    await this.addModelToApp(modelName);
+    for (let i = 0; i < result.length; i++) {
+      await this.addModelToApp(result[i]);
+    }
+    return result;
   }
 
   async returnFieldType(field: string) {
@@ -535,48 +749,18 @@ import {
         return null;
     }
   }
-  createFile = async (
-    path: string,
-    fileName: string,
-    data: string,
-  ): Promise<void> => {
-    if (!this.checkIfFileOrDirectoryExists(path)) {
-      fs.mkdirSync(path);
-    }
 
-    const writeFile = promisify(fs.writeFile);
-
-    return await writeFile(`${path}/${fileName}`, data, 'utf8');
-  };
-
-  async insertAtLine(fileName, lineNumber, textToWrite) {
-    const data = fs.readFileSync(fileName).toString().split('\n');
-    //console.log(data);
-    data.splice(lineNumber, 0, textToWrite);
-    //console.log(data);
-    const text = data.join('\n');
-    const writeFile = promisify(fs.writeFile);
-    return await writeFile(fileName, text, 'utf8');
-  }
-
-  async splitFileTextByWord(fileName, splitWord) {
-    const data = fs.readFileSync(fileName).toString().split(splitWord);
-    return data;
-    // data[1] has the model: line where we should add the model
-    // divide data again to find the exact location
-  }
-
-  async addModelToApp(modelToAdd) {
+  async addModelToApp(modelToAdd: string) {
     const fileName = 'src/app.module.ts';
-    const modelPath = `src/modules/${modelToAdd}/${modelToAdd}.model`;
+    const modelPath = `src/modules/${modelToAdd.toLowerCase()}/${modelToAdd.toLowerCase()}.model`;
     const importString = `import {${modelToAdd}} from '${modelPath}';\n`;
     const splitter = 'models: [';
 
-    const data = await this.splitFileTextByWord(fileName, splitter);
+    const data = await this.helpers.splitFileTextByWord(fileName, splitter);
     if (data[0].includes(modelPath) === false)
-      await this.insertAtLine(fileName, 1, importString);
+      await this.helpers.insertAtLine(fileName, 1, importString);
     if (data[1].includes(modelToAdd)) return true;
-    const data2 = await this.splitFileTextByWord(fileName, splitter);
+    const data2 = await this.helpers.splitFileTextByWord(fileName, splitter);
     const temp = splitter + modelToAdd + ',';
     const finalData = data2[0] + temp + data2[1];
     const writeFile = promisify(fs.writeFile);
@@ -590,21 +774,25 @@ import {
     const importStringForSequelizeModule = `import { SequelizeModule } from "@nestjs/sequelize";\n`;
     const importModelString = `imports:[SequelizeModule.forFeature([${modelToAdd}])],\n`;
 
-    const data = await this.splitFileTextByWord(fileName, '@Module({');
+    const data = await this.helpers.splitFileTextByWord(fileName, '@Module({');
     // check if module is already updated with the model imports
     if (!data[0].includes('modelPath')) {
-      await this.insertAtLine(fileName, 0, importStringForSequelizeModule);
+      await this.helpers.insertAtLine(
+        fileName,
+        0,
+        importStringForSequelizeModule,
+      );
     }
 
     if (!data[0].includes(modelPath)) {
-      await this.insertAtLine(fileName, 1, importStringForModel);
+      await this.helpers.insertAtLine(fileName, 1, importStringForModel);
     }
     if (data[1].includes('SequelizeModule.forFeature')) {
       if (data[1].includes(modelToAdd)) {
         return true;
       } else {
         // add model here
-        const data2 = await this.splitFileTextByWord(
+        const data2 = await this.helpers.splitFileTextByWord(
           fileName,
           'SequelizeModule.forFeature([',
         );
@@ -616,7 +804,10 @@ import {
       }
     } else {
       if (data[1].includes('imports: [')) {
-        const data = await this.splitFileTextByWord(fileName, 'imports: [');
+        const data = await this.helpers.splitFileTextByWord(
+          fileName,
+          'imports: [',
+        );
         const finalData =
           data[0] +
           `imports: [SequelizeModule.forFeature([${modelToAdd}]),` +
@@ -634,18 +825,6 @@ import {
         return true;
       }
     }
-  }
-
-  async getTotalLine(fileName) {
-    const data = fs.readFileSync(fileName).toString().split('\n');
-    return data.length;
-  }
-  checkIfFileOrDirectoryExists = (path: string): boolean => {
-    return fs.existsSync(path);
-  };
-
-  async capitalizeFirstLetter(word: string) {
-    return word.charAt(0).toUpperCase() + word.slice(1);
   }
 
   tableToModel = async () => {

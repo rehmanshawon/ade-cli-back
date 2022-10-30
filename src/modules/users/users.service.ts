@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
-import { Posts } from '../posts/posts.model';
-import { CreateUsersDto } from './dto/create-users.dto';
 import { Users } from './users.model';
+import { CreateUsersDto } from './dto/create-users.dto';
+import { Posts } from '../posts/posts.model';
+import { UpdateUsersDto } from './dto/updte-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -21,8 +22,8 @@ export class UsersService {
     });
   }
 
-  async findAll(page: Number, size: Number, field: string, search: string) {
-    var condition = field
+  async findAll(page: number, size: number, field: string, search: string) {
+    const condition = field
       ? { [field]: { [sequelize.Op.like]: `%${search}%` } }
       : null;
     const { limit, offset } = this.helpers.getPagination(page, size);
@@ -46,11 +47,26 @@ export class UsersService {
     });
   }
 
-  update(id: number, updateSampleDto: any) {
-    return `This action updates a #${id} sample`;
+  async update(id: number, updateUsersDto: UpdateUsersDto, payload: any) {
+    const result = await this.users.update(
+      {
+        ...updateUsersDto,
+        updated_at: sequelize.fn('NOW'),
+        updated_by: payload.sub,
+      },
+      { where: { id }, returning: true },
+    );
+
+    return result;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} sample`;
+  async remove(id: number) {
+    return await this.users.update(
+      {
+        is_active: 0,
+        deleted_at: sequelize.fn('NOW'),
+      },
+      { where: { id } },
+    );
   }
 }

@@ -17,9 +17,15 @@ export class CreatePostsDto {
 title:string;
 
 @IsString()
+@IsOptional()
 body:string;
 
 @IsNumber()
+@IsOptional()
 user_id:number;
+
+@IsNumber()
+@IsOptional()
+category_id:number;
 
 }

@@ -2,33 +2,37 @@
 'use strict';
 module.exports = {
             async up (queryInterface, Sequelize) {
-                await queryInterface.createTable('posts', {
-                    post_id:{
+                await queryInterface.createTable('users', {
+                    id:{
                     type:Sequelize.INTEGER,
                     allowNull:false,
                     autoIncrement:true,                
                     unique:true,
                     primaryKey:true,                              
                 },
-					title:{
+					name:{
                     type:Sequelize.STRING,
                     allowNull:false,                                   
-                    unique:undefined,
+                    unique:false,
                                                     
                 },
-					body:{
+					email:{
                     type:Sequelize.STRING,
                     allowNull:false,                                   
-                    unique:undefined,
+                    unique:true,
                                                     
                 },
-					user_id:{
-                    type:Sequelize.INTEGER,
-                    allowNull:true,
-                    references: {
-                      model: 'users',
-                      key: 'user_id',
-                    },                                              
+					password:{
+                    type:Sequelize.STRING,
+                    allowNull:false,                                   
+                    unique:false,
+                                                    
+                },
+					gender:{
+                    type:Sequelize.STRING,
+                    allowNull:true,                                   
+                    unique:false,
+                                                    
                 },
 					isActive: {
             field: 'is_active',
@@ -65,6 +69,6 @@ module.exports = {
             },
 
             async down (queryInterface, Sequelize) {
-                await queryInterface.dropTable('posts');
+                await queryInterface.dropTable('users');
             }
         };

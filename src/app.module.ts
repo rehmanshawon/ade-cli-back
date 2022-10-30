@@ -1,4 +1,9 @@
 /* eslint-disable prettier/prettier */
+import { Category } from 'src/modules/category/category.model';
+
+import { Users } from 'src/modules/users/users.model';
+
+import { Posts } from 'src/modules/posts/posts.model';
 
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
@@ -11,11 +16,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SysRolesModule } from './modules/sys_roles/sys_roles.module';
 import { SysRole } from './modules/sys_roles/models/sys-roles.model';
 import { CreateTableModule } from './helpers/create-table/create-table.module';
-import { SampleModule } from './modules/sample/sample.module';
-import { UsersModule } from './modules/users/users.module';
-import { Users } from './modules/users/users.model';
-import { Posts } from './modules/posts/posts.model';
-import { HelpersModule } from './helpers/helpers/helpers.module';
+import { PostsModule } from './modules/posts/posts.module';
 
 @Module({
   imports: [
@@ -36,15 +37,13 @@ import { HelpersModule } from './helpers/helpers/helpers.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [SysUser, SysRole, Users, Posts],
+      models: [Category, Users, Posts, SysUser, SysRole],
     }),
-
+    PostsModule,
     UserModule,
     AuthModule,
     SysRolesModule,
     CreateTableModule,
-    SampleModule,
-    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
