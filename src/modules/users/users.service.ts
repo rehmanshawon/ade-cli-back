@@ -35,7 +35,7 @@ export class UsersService {
       limit,
       offset,
     });
-    const response = this.helpers.getPagingData(data, page, limit);
+    const response = this.helpers.getPagingData(data, page, limit, 'users');
     return response;
   }
 

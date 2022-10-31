@@ -293,8 +293,8 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
       const condition = field
         ? { [field]: { [sequelize.Op.like]:` +
       '`%${search}%`' +
-      ` } }
-        : null;
+      ` }, is_active: 1 }
+        : {is_active: 1};
       const { limit, offset } = this.helpers.getPagination(page, size);
       const data = await this.${tableName}.findAndCountAll({        
         order: [['id', 'DESC']],
@@ -303,7 +303,7 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
         limit,
         offset,
       });
-      const response = this.helpers.getPagingData(data, page, limit);
+      const response = this.helpers.getPagingData(data, page, limit,'${tableName}');
       return response;
     }
 
@@ -311,6 +311,7 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
       return this.${tableName}.findOne({
         where: {
           id,
+          is_active: 1,
         },
         include: [${arrayOfIncludes}],
       });
@@ -435,8 +436,9 @@ export class ${modelName}Module {}
       `${tableName}.module.ts`,
       moduleFileData,
     );
-    //await this.addModelToApp(modelName);
-    // return { ModulePath: newModule };
+
+    // we can now safely add the modul to app.module
+    return await this.addModuleToApp(modelName);
   }
 
   async createUserDto(dtoName: string, dtoData: string, dtoPath: string) {
@@ -713,6 +715,7 @@ export class ${modelName}Module {}
     for (let i = 0; i < result.length; i++) {
       await this.addModelToApp(result[i]);
     }
+
     return result;
   }
 
@@ -765,6 +768,29 @@ export class ${modelName}Module {}
     const finalData = data2[0] + temp + data2[1];
     const writeFile = promisify(fs.writeFile);
     await writeFile(fileName, finalData, 'utf8');
+  }
+
+  async addModuleToApp(moduleName: string) {
+    const fileName = 'src/app.module.ts';
+    const modulePath = `src/modules/${moduleName.toLowerCase()}/${moduleName.toLowerCase()}.module`;
+    const importString = `import { ${moduleName}Module } from '${modulePath}';\n`;
+    const splitter = 'models:';
+
+    const data = await this.helpers.splitFileTextByWord(fileName, splitter);
+    // data[1] is our work area
+
+    if (data[0].includes(modulePath) === false)
+      await this.helpers.insertAtLine(fileName, 1, importString);
+    if (data[1].includes(`${moduleName}Module`)) return true;
+    const data2 = await this.helpers.splitFileTextByWord(
+      fileName,
+      'CreateTableModule,',
+    );
+    const temp = 'CreateTableModule,' + `${moduleName}Module` + ',';
+    const finalData = data2[0] + temp + data2[1];
+    const writeFile = promisify(fs.writeFile);
+    await writeFile(fileName, finalData, 'utf8');
+    return true;
   }
 
   async addModelToModule(modelToAdd) {

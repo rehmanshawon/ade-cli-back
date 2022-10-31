@@ -12,12 +12,12 @@ export class HelpersService {
 
     return { limit, offset };
   };
-  getPagingData = (data, page, limit) => {
-    const { count: totalItems, rows: users } = data;
+  getPagingData = (data, page, limit, tableName) => {
+    const { count: totalItems, rows: records } = data;
     const currentPage = page ? +page : 0;
     const totalPages = Math.ceil(totalItems / limit);
 
-    return { totalItems, users, totalPages, currentPage };
+    return { totalItems, [tableName]: records, totalPages, currentPage };
   };
 
   createFile = async (

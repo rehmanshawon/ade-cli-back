@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+import { PostsModule } from 'src/modules/posts/posts.module';
+
 import { Category } from 'src/modules/category/category.model';
 
 import { Users } from 'src/modules/users/users.model';
@@ -16,7 +18,6 @@ import { ConfigModule } from '@nestjs/config';
 import { SysRolesModule } from './modules/sys_roles/sys_roles.module';
 import { SysRole } from './modules/sys_roles/models/sys-roles.model';
 import { CreateTableModule } from './helpers/create-table/create-table.module';
-import { PostsModule } from './modules/posts/posts.module';
 
 @Module({
   imports: [
@@ -39,11 +40,11 @@ import { PostsModule } from './modules/posts/posts.module';
       database: process.env.DB_NAME_DEVELOPMENT,
       models: [Category, Users, Posts, SysUser, SysRole],
     }),
-    PostsModule,
     UserModule,
     AuthModule,
     SysRolesModule,
     CreateTableModule,
+    PostsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -25,8 +25,8 @@ import { Category } from 'src/modules/category/category.model';
 
     async findAll(page: number, size: number, field: string, search: string) {
       const condition = field
-        ? { [field]: { [sequelize.Op.like]:`%${search}%` } }
-        : null;
+        ? { [field]: { [sequelize.Op.like]:`%${search}%` }, is_active: 1 }
+        : {is_active: 1};
       const { limit, offset } = this.helpers.getPagination(page, size);
       const data = await this.posts.findAndCountAll({        
         order: [['id', 'DESC']],
@@ -35,7 +35,7 @@ import { Category } from 'src/modules/category/category.model';
         limit,
         offset,
       });
-      const response = this.helpers.getPagingData(data, page, limit);
+      const response = this.helpers.getPagingData(data, page, limit,'posts');
       return response;
     }
 
@@ -43,6 +43,7 @@ import { Category } from 'src/modules/category/category.model';
       return this.posts.findOne({
         where: {
           id,
+          is_active: 1,
         },
         include: [{model:Users},{model:Category}],
       });
