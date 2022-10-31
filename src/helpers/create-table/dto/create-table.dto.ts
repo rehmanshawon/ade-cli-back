@@ -40,10 +40,6 @@ class fieldDefinition {
   @IsOptional()
   optional: boolean = true;
 
-  @IsBoolean()
-  @IsOptional()
-  autoIncrement: boolean = false;
-
   @IsString()
   @IsOptional()
   default: any = null;
@@ -55,10 +51,6 @@ class fieldDefinition {
   @IsNumber()
   @IsOptional()
   maxLength: number = 0;
-
-  @IsBoolean()
-  @IsOptional()
-  primaryKey: boolean = false;
 
   @IsBoolean()
   @IsOptional()
