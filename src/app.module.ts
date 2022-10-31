@@ -1,4 +1,8 @@
 /* eslint-disable prettier/prettier */
+import { SysTypesModule } from 'src/modules/sys_types/sys_types.module';
+
+import {SysTypes} from 'src/modules/sys_types/sys_types.model';
+
 
 import { EmployeeModule } from 'src/modules/employee/employee.module';
 
@@ -47,12 +51,12 @@ import { CreateTableModule } from './helpers/create-table/create-table.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [Employee, Department, Category, Users, Posts, SysUser, SysRole],
+      models: [SysTypes,Employee, Department, Category, Users, Posts, SysUser, SysRole],
     }),
     UserModule,
     AuthModule,
     SysRolesModule,
-    CreateTableModule,
+    CreateTableModule,SysTypesModule,
     EmployeeModule,
     DepartmentModule,
     PostsModule,
