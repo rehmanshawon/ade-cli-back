@@ -1,25 +1,22 @@
 /* eslint-disable prettier/prettier */
-import {Employee} from 'src/modules/employee/employee.model';
-
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
-import { Posts } from './posts.model';
-import { CreatePostsDto } from './dto/create-posts.dto';
-import { UpdatePostsDto } from './dto/update-posts.dto';
-import { Users } from 'src/modules/users/users.model';
-import { Category } from 'src/modules/category/category.model';
+import { Employee } from './employee.model';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { Department } from 'src/modules/department/department.model';
 @Injectable()
-      export class PostsService {
+      export class EmployeeService {
         constructor(
-          @InjectModel(Posts)
-          private posts: typeof Posts,
+          @InjectModel(Employee)
+          private employee: typeof Employee,
           private helpers: HelpersService,
         ) {}
-        create(createPostsDto: CreatePostsDto, payload: any) {
-          return this.posts.create({
-            ...createPostsDto,
+        create(createEmployeeDto: CreateEmployeeDto, payload: any) {
+          return this.employee.create({
+            ...createEmployeeDto,
             created_at: sequelize.fn('NOW'),
             created_by: payload.sub,
           });
@@ -30,31 +27,31 @@ import { Category } from 'src/modules/category/category.model';
         ? { [field]: { [sequelize.Op.like]:`%${search}%` }, is_active: 1 }
         : {is_active: 1};
       const { limit, offset } = this.helpers.getPagination(page, size);
-      const data = await this.posts.findAndCountAll({        
+      const data = await this.employee.findAndCountAll({        
         order: [['id', 'DESC']],
-        include: [{model:Employee},{model:Users},{model:Category}],
+        include: [{model:Department}],
         where: condition,
         limit,
         offset,
       });
-      const response = this.helpers.getPagingData(data, page, limit,'posts');
+      const response = this.helpers.getPagingData(data, page, limit,'employee');
       return response;
     }
 
     findOne(id: number) {
-      return this.posts.findOne({
+      return this.employee.findOne({
         where: {
           id,
           is_active: 1,
         },
-        include: [{model:Employee},{model:Users},{model:Category}],
+        include: [{model:Department}],
       });
     }
 
-  async update(id: number, updatePostsDto: UpdatePostsDto,payload: any) {
-    const result = await this.posts.update(
+  async update(id: number, updateEmployeeDto: UpdateEmployeeDto,payload: any) {
+    const result = await this.employee.update(
       { 
-        ...updatePostsDto,
+        ...updateEmployeeDto,
         updated_at: sequelize.fn('NOW'),
         updated_by: payload.sub,
        },
@@ -65,7 +62,7 @@ import { Category } from 'src/modules/category/category.model';
   }
 
   async remove(id: number) {
-    return await this.posts.update(
+    return await this.employee.update(
       {
           is_active: 0,
           deleted_at: sequelize.fn('NOW'),

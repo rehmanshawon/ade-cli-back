@@ -70,21 +70,22 @@ export class HelpersService {
   }
 
   async getBelongsTo(fileName) {
+    const result = [];
     const data = fs
       .readFileSync(fileName)
       .toString()
       .split('@BelongsTo(() => ');
     if (data.length === 2) {
       const data2 = data[1].split(')');
-      return data2[0];
+      result.push(data2[0]);
     }
-    const result = [];
+
     if (data.length > 2) {
       for (let i = 1; i < data.length; i++) {
         result.push(data[i].split(')')[0]);
       }
-      return result;
     }
+    return result;
   }
 
   async getHasMany(fileName) {

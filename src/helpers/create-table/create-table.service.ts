@@ -349,7 +349,14 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
       association,
     );
 
-    // creating service is done. Now let's write the controller file
+    // we have to update the all the associate model service files also
+    // creating service is done.
+    // association has the models this model belongs to.
+
+    if (association.length > 0) {
+      await this.updateAssociateService(association as string[], modelName);
+    }
+    //Now let's write the controller file
 
     const controllerFileData = `/* eslint-disable prettier/prettier */
     import {
@@ -441,6 +448,35 @@ export class ${modelName}Module {}
     return await this.addModuleToApp(modelName);
   }
 
+  async updateAssociateService(associates: string[], modelName: string) {
+    for (let i = 0; i < associates.length; i++) {
+      // open the associate service file
+      const fileName = `src/modules/${associates[i].toLowerCase()}/${associates[
+        i
+      ].toLowerCase()}.service.ts`;
+      const modelPath = `src/modules/${modelName.toLowerCase()}/${modelName.toLowerCase()}.model`;
+      const importString = `import {${modelName}} from '${modelPath}';\n`;
+      const splitter = 'include: [';
+
+      const data = await this.helpers.splitFileTextByWord(fileName, splitter);
+      if (data[0].includes(modelPath) === false)
+        await this.helpers.insertAtLine(fileName, 1, importString);
+      if (data[1].includes(modelName)) continue;
+      const result = [];
+      const data2 = fs.readFileSync(fileName).toString().split('include: [');
+      const overwriteString = `include: [{model:${modelName}},`;
+      let finalData = '';
+      for (let j = 0; j < data2.length; j++) {
+        if (j === data2.length - 1) {
+          finalData += data2[j];
+          break;
+        }
+        finalData += data2[j] + overwriteString;
+      }
+      const writeFile = promisify(fs.writeFile);
+      await writeFile(fileName, finalData, 'utf8');
+    }
+  }
   async createUserDto(dtoName: string, dtoData: string, dtoPath: string) {
     const newDto = await this.helpers.createFile(
       dtoPath,
