@@ -445,7 +445,7 @@ export class ${modelName}Module {}
     );
 
     // we can now safely add the modul to app.module
-    return await this.addModuleToApp(modelName);
+    return await this.addModuleToApp(tableName);
   }
 
   async updateAssociateService(associates: string[], modelName: string) {
@@ -747,7 +747,7 @@ export class ${modelName}Module {}
       `src/modules/${tableName}/${tableName}.model.ts`,
     );
 
-    await this.addModelToApp(modelName);
+    await this.addModelToApp(tableName);
     for (let i = 0; i < result.length; i++) {
       await this.addModelToApp(result[i]);
     }
@@ -789,9 +789,10 @@ export class ${modelName}Module {}
     }
   }
 
-  async addModelToApp(modelToAdd: string) {
+  async addModelToApp(tableName: string) {
+    const modelToAdd = await this.helpers.capitalizeFirstLetter(tableName);
     const fileName = 'src/app.module.ts';
-    const modelPath = `src/modules/${modelToAdd.toLowerCase()}/${modelToAdd.toLowerCase()}.model`;
+    const modelPath = `src/modules/${tableName}/${tableName}.model`;
     const importString = `import {${modelToAdd}} from '${modelPath}';\n`;
     const splitter = 'models: [';
 
@@ -806,9 +807,10 @@ export class ${modelName}Module {}
     await writeFile(fileName, finalData, 'utf8');
   }
 
-  async addModuleToApp(moduleName: string) {
+  async addModuleToApp(tableName: string) {
+    const moduleName = await this.helpers.capitalizeFirstLetter(tableName);
     const fileName = 'src/app.module.ts';
-    const modulePath = `src/modules/${moduleName.toLowerCase()}/${moduleName.toLowerCase()}.module`;
+    const modulePath = `src/modules/${tableName}/${tableName}.module`;
     const importString = `import { ${moduleName}Module } from '${modulePath}';\n`;
     const splitter = 'models:';
 

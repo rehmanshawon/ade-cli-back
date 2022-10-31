@@ -1,15 +1,12 @@
 /* eslint-disable prettier/prettier */
-import { Sys_typesModule } from 'src/modules/sys_types/sys_types.module';
-
-import {Sys_types} from 'src/modules/sys_types/sys_types.model';
 
 import { EmployeeModule } from 'src/modules/employee/employee.module';
 
-import {Employee} from 'src/modules/employee/employee.model';
+import { Employee } from 'src/modules/employee/employee.model';
 
 import { DepartmentModule } from 'src/modules/department/department.module';
 
-import {Department} from 'src/modules/department/department.model';
+import { Department } from 'src/modules/department/department.model';
 
 import { PostsModule } from 'src/modules/posts/posts.module';
 
@@ -50,12 +47,14 @@ import { CreateTableModule } from './helpers/create-table/create-table.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [Sys_types,Employee,Department,Category, Users, Posts, SysUser, SysRole],
+      models: [Employee, Department, Category, Users, Posts, SysUser, SysRole],
     }),
     UserModule,
     AuthModule,
     SysRolesModule,
-    CreateTableModule,Sys_typesModule,EmployeeModule,DepartmentModule,
+    CreateTableModule,
+    EmployeeModule,
+    DepartmentModule,
     PostsModule,
   ],
   controllers: [AppController],

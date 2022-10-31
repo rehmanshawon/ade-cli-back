@@ -39,6 +39,10 @@ export class HelpersService {
   };
 
   async capitalizeFirstLetter(word: string) {
+    const data = word.split('_');
+    if (data.length > 1) {
+      return data.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+    }
     return word.charAt(0).toUpperCase() + word.slice(1);
   }
 
