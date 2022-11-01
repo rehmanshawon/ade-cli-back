@@ -1,4 +1,16 @@
 /* eslint-disable prettier/prettier */
+import { SysAttributesModule } from 'src/modules/sys_attributes/sys_attributes.module';
+
+import {SysAttributes} from 'src/modules/sys_attributes/sys_attributes.model';
+
+import { SysTablesModule } from 'src/modules/sys_tables/sys_tables.module';
+
+import {SysTables} from 'src/modules/sys_tables/sys_tables.model';
+
+import { SysTypesModule } from 'src/modules/sys_types/sys_types.module';
+
+import {SysTypes} from 'src/modules/sys_types/sys_types.model';
+
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AppController } from './app.controller';
@@ -30,12 +42,12 @@ import { CreateTableModule } from './helpers/create-table/create-table.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [SysUser, SysRole],
+      models: [SysAttributes,SysTables,SysTypes,SysUser, SysRole],
     }),
     UserModule,
     AuthModule,
     SysRolesModule,
-    CreateTableModule,
+    CreateTableModule,SysAttributesModule,SysTablesModule,SysTypesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -268,9 +268,9 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
     for (let i = 0; i < association.length; i++) {
       const impModelString = `import { ${
         association[i]
-      } } from 'src/modules/${association[i].toLowerCase()}/${association[
-        i
-      ].toLowerCase()}.model';\n`;
+      } } from 'src/modules/${await this.helpers.toSnakeCase(
+        association[i],
+      )}/${await this.helpers.toSnakeCase(association[i])}.model';\n`;
       serviceFileData += impModelString;
     }
     const arrayOfIncludes = association.map((m) => `{model:${m}}`);
@@ -372,18 +372,23 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../sys-auth/jwt-auth.guard';
+import { HelpersService } from 'src/helpers/helpers/helpers.service';
 import { ${modelName}Service } from './${tableName}.service';
 import { Create${modelName}Dto } from './dto/create-${tableName}.dto';
 import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
 
 @Controller('${tableName}')
 export class ${modelName}Controller {
-  constructor(private readonly ${tableName}Service: ${modelName}Service) {}
+  constructor(private readonly ${await this.helpers.uncapitalizeFirstLetter(
+    modelName,
+  )}Service: ${modelName}Service) {}
 
     @UseGuards(JwtAuthGuard)
     @Post()
     create(@Body() create${modelName}Dto: Create${modelName}Dto, @Request() req) {
-      return this.${tableName}Service.create(create${modelName}Dto, req.user);
+      return this.${await this.helpers.uncapitalizeFirstLetter(
+        modelName,
+      )}Service.create(create${modelName}Dto, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -391,13 +396,17 @@ export class ${modelName}Controller {
     async findAll(@Request() req) {
       const { page, size, field, search } = req.query;
 
-      return await this.${tableName}Service.findAll(page, size, field, search);
+      return await this.${await this.helpers.uncapitalizeFirstLetter(
+        modelName,
+      )}Service.findAll(page, size, field, search);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get(':id')
     findOne(@Param('id') id: string) {
-      return this.${tableName}Service.findOne(+id);
+      return this.${await this.helpers.uncapitalizeFirstLetter(
+        modelName,
+      )}Service.findOne(+id);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -407,13 +416,17 @@ export class ${modelName}Controller {
       @Body() update${modelName}Dto: Update${modelName}Dto,
       @Request() req,
     ) {
-      return this.${tableName}Service.update(+id, update${modelName}Dto, req.user);
+      return this.${await this.helpers.uncapitalizeFirstLetter(
+        modelName,
+      )}Service.update(+id, update${modelName}Dto, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
     remove(@Param('id') id: string) {
-      return this.${tableName}Service.remove(+id);
+      return this.${await this.helpers.uncapitalizeFirstLetter(
+        modelName,
+      )}Service.remove(+id);
     }
 
   }
@@ -450,12 +463,14 @@ export class ${modelName}Module {}
   }
 
   async updateAssociateService(associates: string[], modelName: string) {
+    const modelPath = `src/modules/${await this.helpers.toSnakeCase(
+      modelName,
+    )}/${await this.helpers.toSnakeCase(modelName)}.model`;
     for (let i = 0; i < associates.length; i++) {
       // open the associate service file
-      const fileName = `src/modules/${associates[i].toLowerCase()}/${associates[
-        i
-      ].toLowerCase()}.service.ts`;
-      const modelPath = `src/modules/${modelName.toLowerCase()}/${modelName.toLowerCase()}.model`;
+      const fileName = `src/modules/${await this.helpers.toSnakeCase(
+        associates[i],
+      )}/${await this.helpers.toSnakeCase(associates[i])}.service.ts`;
       const importString = `import {${modelName}} from '${modelPath}';\n`;
       const splitter = 'include: [';
 
@@ -534,7 +549,13 @@ export class ${modelName}Module {}
     let HasManyString = '';
     let HasOneString = '';
     let belongsToManyString = '';
-
+    type updateFileData = {
+      modelName: string;
+      modelFile: string;
+      importString: string;
+      hasString: string;
+    };
+    const updateForeignModelStructure: updateFileData[] = [];
     const { tableName, fieldList } = createTableDto;
     const modulePath = `src/modules/${tableName}`;
     if (!this.helpers.checkIfFileOrDirectoryExists(modulePath)) {
@@ -583,7 +604,7 @@ export class ${modelName}Module {}
 \t${thisTableKey}?: ${fieldList[i].type};\n`;
           belongsToString += `
 \t@BelongsTo(() => ${foreignModel})
-\t${thisTableKey.split('_')[0]}?: ${foreignModel};\n`;
+\t${await this.helpers.returnSingularized(foreignModel)}?: ${foreignModel};\n`;
           belongsTo.push(foreignModel); // for inclusion in sequelize crud service
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file
@@ -594,6 +615,60 @@ export class ${modelName}Module {}
 \t@HasMany(() => ${thisModel})
 \t${thisTable}?: ${thisModel}[];\n`;
           has.push(thisModel); // for inclusion in crud service
+          const foreignModelFilePath = `src/modules/${foreignTable}/${foreignTable}.model.ts`;
+          // lets push the foreign model update data for later file writing
+
+          updateForeignModelStructure.push({
+            modelName: foreignModel,
+            modelFile: foreignModelFilePath,
+            importString: foriegnTableImportModelString,
+            hasString: HasManyString,
+          });
+        } // 1:N relatioship is done
+        if (fieldList[i].reference.relation.toLowerCase() === '1:1') {
+          // in this case foreignKey atttribute should be added before the primaryKey column
+          const tempStr = primaryKeyString;
+          primaryKeyString = `@ForeignKey(() => ${foreignModel})\n`;
+          primaryKeyString += tempStr;
+          // now define the belongs to assosiation
+          belongsToString += `
+          @BelongsTo(() => ${foreignModel})
+          ${await this.helpers.returnSingularized(
+            foreignModel,
+          )}?: ${foreignModel};\n`;
+          belongsTo.push(foreignModel);
+          // we now have to modify the foreign table also to reflect the association with this table
+          // first import this table to foreign model file
+          foriegnTableImportModelString += `import { ${thisModel} } from 'src/modules/${thisTable}/${thisTable}.model';\n`;
+          // add the primary key of this model to foreign model
+          foreignTableForeignKeyString = `
+          @Column({            
+            type: DataType.INTEGER 
+          })
+          @Index({
+            name: "${foreignTable}_${thisTable}_${thisTableKey}_fk",
+            using: "BTREE",
+            order: "ASC",
+            unique: false 
+          })
+          ${thisTableKey}!: number;\n`;
+          // defing hasone association
+          HasOneString += `
+          @HasOne(() => ${thisModel})
+          ${await this.helpers.returnSingularized(
+            thisTable,
+          )}?: ${thisModel};\n`;
+          has.push(thisModel);
+
+          const foreignModelFilePath = `src/modules/${foreignTable}/${foreignTable}.model.ts`;
+          // lets push the foreign model update data for later file writing
+
+          updateForeignModelStructure.push({
+            modelName: foreignModel,
+            modelFile: foreignModelFilePath,
+            importString: foriegnTableImportModelString,
+            hasString: foreignTableForeignKeyString + HasOneString,
+          });
           // we need to update the foreign table right now, because the
           // foreign key may point to a different table
           if (
@@ -613,40 +688,9 @@ export class ${modelName}Module {}
             await this.helpers.insertAtLine(
               `src/modules/${foreignTable}/${foreignTable}.model.ts`,
               foreignModelFileTotalLine - 2,
-              HasManyString,
+              HasOneString,
             );
           }
-        } // 1:N relatioship is done
-        if (fieldList[i].reference.relation.toLowerCase() === '1:1') {
-          // in this case foreignKey atttribute should be added before the primaryKey column
-          const tempStr = primaryKeyString;
-          primaryKeyString = `@ForeignKey(() => ${foreignModel})\n`;
-          primaryKeyString += tempStr;
-          // now define the belongs to assosiation
-          belongsToString += `
-          @BelongsTo(() => ${foreignModel})
-          ${thisTableKey.split('_')[0]}?: ${foreignModel};\n`;
-          belongsTo.push(foreignModel);
-          // we now have to modify the foreign table also to reflect the association with this table
-          // first import this table to foreign model file
-          foriegnTableImportModelString += `import { ${thisModel} } from 'src/modules/${thisTable}/models/${thisTable}.model';\n`;
-          // add the primary key of this model to foreign model
-          foreignTableForeignKeyString += `
-          @Column({            
-            type: DataType.INTEGER 
-          })
-          @Index({
-            name: "${foreignTable}_${thisTable}_${thisTableKey}_fk",
-            using: "BTREE",
-            order: "ASC",
-            unique: false 
-          })
-          ${thisTableKey}!: number;\n`;
-          // defing hasone association
-          HasOneString += `
-          @HasOne(() => ${thisModel})
-          ${thisTable}?: ${thisModel};\n`;
-          has.push(thisModel);
           //done
         }
         if (fieldList[i].reference.relation.toLowerCase() === 'm:n') {
@@ -759,6 +803,29 @@ export class ${modelName}Module {}
       await this.addModelToApp(result[i]);
     }
 
+    for (let j = 0; j < updateForeignModelStructure.length; j++) {
+      // we need to update the foreign models also
+      if (
+        !this.helpers.checkFileForAString(
+          updateForeignModelStructure[j].modelFile,
+          `${tableName}.model`,
+        )
+      ) {
+        await this.helpers.insertAtLine(
+          updateForeignModelStructure[j].modelFile,
+          1,
+          updateForeignModelStructure[j].importString,
+        );
+        const foreignModelFileTotalLine = await this.helpers.getTotalLine(
+          updateForeignModelStructure[j].modelFile,
+        );
+        await this.helpers.insertAtLine(
+          updateForeignModelStructure[j].modelFile,
+          foreignModelFileTotalLine - 2,
+          updateForeignModelStructure[j].hasString,
+        );
+      }
+    }
     return result;
   }
 
@@ -799,7 +866,9 @@ export class ${modelName}Module {}
   async addModelToApp(tableName: string) {
     const modelToAdd = await this.helpers.capitalizeFirstLetter(tableName);
     const fileName = 'src/app.module.ts';
-    const modelPath = `src/modules/${tableName}/${tableName}.model`;
+    const modelPath = `src/modules/${await this.helpers.toSnakeCase(
+      tableName,
+    )}/${await this.helpers.toSnakeCase(tableName)}.model`;
     const importString = `import {${modelToAdd}} from '${modelPath}';\n`;
     const splitter = 'models: [';
 

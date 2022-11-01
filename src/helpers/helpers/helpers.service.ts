@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { promisify } from 'util';
+import { isSingular, singular } from 'pluralize';
 import { exec } from 'child_process';
 import * as fs from 'fs';
 
@@ -44,6 +45,10 @@ export class HelpersService {
       return data.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join('');
     }
     return word.charAt(0).toUpperCase() + word.slice(1);
+  }
+
+  async uncapitalizeFirstLetter(word: string) {
+    return word.charAt(0).toLowerCase() + word.slice(1);
   }
 
   async getTotalLine(fileName) {
@@ -120,5 +125,24 @@ export class HelpersService {
       }
       return result;
     }
+  }
+  async returnSingularized(word: string) {
+    if (isSingular(word)) {
+      return word;
+    } else {
+      return singular(word);
+    }
+  }
+
+  async toSnakeCase(phrase: string) {
+    return (
+      phrase &&
+      phrase
+        .match(
+          /[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g,
+        )
+        .map((x) => x.toLowerCase())
+        .join('_')
+    );
   }
 }
