@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AppController } from './app.controller';

@@ -48,12 +48,11 @@ export class CreateTableService {
     const migrationFile = migrationFiles[migrationFiles.length - 1];
     let data = `/* eslint-disable prettier/prettier */\n'use strict';\n`;
 
-    let fieldListString = `id:{
-                    type:${S_INT},
+    let fieldListString = `id: {                    
                     allowNull:false,
-                    autoIncrement:true,                
-                    unique:true,
-                    primaryKey:true,                              
+                    autoIncrement:true,             
+                    primaryKey:true, 
+                    type:${S_INT},                             
                 },\n\t\t\t\t\t`;
     for (let i = 0; i < fieldList.length; i++) {
       const fieldType = await this.returnFieldType(fieldList[i].type);
@@ -182,7 +181,7 @@ export class CreateTableService {
     // update the app.module
     const { tableName, fieldList } = table;
     const modelName = await this.helpers.capitalizeFirstLetter(tableName);
-    const modulePath = `./src/modules/${tableName}`;
+    const modulePath = `src/modules/${tableName}`;
     // if (!this.helpers.checkIfFileOrDirectoryExists(modulePath)) {
     //   fs.mkdirSync(modulePath);
     // }
@@ -441,7 +440,7 @@ export class ${modelName}Module {}
     `;
 
     const newModule = await this.helpers.createFile(
-      `./src/modules/${tableName}/`,
+      `src/modules/${tableName}/`,
       `${tableName}.module.ts`,
       moduleFileData,
     );
@@ -537,7 +536,7 @@ export class ${modelName}Module {}
     let belongsToManyString = '';
 
     const { tableName, fieldList } = createTableDto;
-    const modulePath = `./src/modules/${tableName}`;
+    const modulePath = `src/modules/${tableName}`;
     if (!this.helpers.checkIfFileOrDirectoryExists(modulePath)) {
       fs.mkdirSync(modulePath);
     }
@@ -743,11 +742,11 @@ export class ${modelName}Module {}
 
     // the data variable now has everything for the model file of this table
     // let's create a module folder under the same name, and write the model file inside it.
-    if (!this.helpers.checkIfFileOrDirectoryExists(tableName)) {
-      fs.mkdirSync(tableName);
-    }
+    // if (!this.helpers.checkIfFileOrDirectoryExists(tableName)) {
+    //   fs.mkdirSync(tableName);
+    // }
     const newModel = await this.helpers.createFile(
-      `./src/modules/${tableName}/`,
+      `src/modules/${tableName}/`,
       `${tableName}.model.ts`,
       data,
     );
