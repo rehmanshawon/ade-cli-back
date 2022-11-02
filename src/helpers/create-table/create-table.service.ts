@@ -257,7 +257,7 @@ export class Update${modelName}Dto extends PartialType(Create${modelName}Dto) {}
 
     //now lets write the crud service file on the model
     let serviceFileData = `/* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
@@ -282,13 +282,31 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
           private ${tableName}: typeof ${modelName},
           private helpers: HelpersService,
         ) {}
-        create(create${modelName}Dto: Create${modelName}Dto, payload: any) {
-          return this.${tableName}.create({
+       async create(create${modelName}Dto: Create${modelName}Dto, payload: any) {
+        try {
+          const response =  await this.${tableName}.create({
             ...create${modelName}Dto,
             created_at: sequelize.fn('NOW'),
             created_by: payload.sub,
           });
-        }
+          return {
+        error: false,
+        statusCode: 201,
+        message: 'record created successfully!',
+        data: response,
+      };
+        }catch (err) {
+      throw new HttpException(
+        {
+          error: true,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: err.errors[0].message,
+          data: [],
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 
     async findAll(page: number, size: number, field: string, search: string) {
       const condition = field
@@ -297,6 +315,7 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
       ` }, is_active: 1 }
         : {is_active: 1};
       const { limit, offset } = this.helpers.getPagination(page, size);
+      try {
       const data = await this.${tableName}.findAndCountAll({        
         order: [['id', 'DESC']],
         include: [${arrayOfIncludes}],
@@ -305,40 +324,109 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
         offset,
       });
       const response = this.helpers.getPagingData(data, page, limit,'${tableName}');
-      return response;
-    }
-
-    findOne(id: number) {
-      return this.${tableName}.findOne({
-        where: {
-          id,
-          is_active: 1,
+      return {
+        error: false,
+        statusCode: 200,
+        message: 'Success!',
+        data: response,
+      };
+    }catch (err) {
+      throw new HttpException(
+        {
+          error: true,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: err.errors[0].message,
+          data: [],
         },
-        include: [${arrayOfIncludes}],
-      });
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+    async findOne(id: number) {
+       try {
+          const response = await this.${tableName}.findOne({
+            where: {
+              id,
+              is_active: 1,
+            },
+            include: [${arrayOfIncludes}],
+          });
+          return {
+        error: false,
+        statusCode: 200,
+        message: 'Success!',
+        data: response,
+      };
+      } catch (err) {
+      throw new HttpException(
+        {
+          error: true,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: err.errors[0].message,
+          data: [],
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     }
 
   async update(id: number, update${modelName}Dto: Update${modelName}Dto,payload: any) {
-    const result = await this.${tableName}.update(
-      { 
-        ...update${modelName}Dto,
-        updated_at: sequelize.fn('NOW'),
-        updated_by: payload.sub,
-       },
-      { where: { id }, returning: true },
-    );
+    try {
+        const response = await this.${tableName}.update(
+          { 
+            ...update${modelName}Dto,
+            updated_at: sequelize.fn('NOW'),
+            updated_by: payload.sub,
+          },
+          { where: { id }, returning: true },
+        );
 
-    return result;
+    return {
+        error: false,
+        statusCode: 200,
+        message: 'Update success!',
+        data: response,
+      };
+    }catch (err) {
+      throw new HttpException(
+        {
+          error: true,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: err.errors[0].message,
+          data: [],
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async remove(id: number) {
-    return await this.${tableName}.update(
-      {
-          is_active: 0,
-          deleted_at: sequelize.fn('NOW'),
-        },
-        { where: { id } },
-      );
+      try {
+          const response = await this.${tableName}.update(
+            {
+                is_active: 0,
+                deleted_at: sequelize.fn('NOW'),
+              },
+              { where: { id } },
+            );
+            return {
+          error: false,
+          statusCode: 200,
+          message: 'Delete success!',
+          data: response,
+        };
+      }catch (err) {
+        throw new HttpException(
+          {
+            error: true,
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: err.errors[0].message,
+            data: [],
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
   }
   \n`;

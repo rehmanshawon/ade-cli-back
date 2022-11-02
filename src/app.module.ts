@@ -1,19 +1,7 @@
 /* eslint-disable prettier/prettier */
-import { SysDescModule } from 'src/modules/sys_desc/sys_desc.module';
-
-import {SysDesc} from 'src/modules/sys_desc/sys_desc.model';
-
-import { SysAttributesModule } from 'src/modules/sys_attributes/sys_attributes.module';
-
-import {SysAttributes} from 'src/modules/sys_attributes/sys_attributes.model';
-
 import { SysTablesModule } from 'src/modules/sys_tables/sys_tables.module';
 
 import {SysTables} from 'src/modules/sys_tables/sys_tables.model';
-
-import { SysTypesModule } from 'src/modules/sys_types/sys_types.module';
-
-import {SysTypes} from 'src/modules/sys_types/sys_types.model';
 
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
@@ -46,12 +34,12 @@ import { CreateTableModule } from './helpers/create-table/create-table.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [SysDesc,SysAttributes,SysTables,SysTypes,SysUser, SysRole],
+      models: [SysTables,SysUser, SysRole],
     }),
     UserModule,
     AuthModule,
     SysRolesModule,
-    CreateTableModule,SysDescModule,SysAttributesModule,SysTablesModule,SysTypesModule,
+    CreateTableModule,SysTablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

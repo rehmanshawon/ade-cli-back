@@ -1,8 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { SysDesc } from 'src/modules/sys_desc/sys_desc.model';
-
-import { SysAttributes } from 'src/modules/sys_attributes/sys_attributes.model';
-
 import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo, HasMany, HasOne, BelongsToMany } from 'sequelize-typescript';
 
 	@Table({tableName: 'sys_tables',timestamps: false,comment: ""})
@@ -31,13 +27,5 @@ import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo
 
 	@Column({type: DataType.DATE})
 	deleted_at?: Date;
-
-
-	@HasMany(() => SysAttributes)
-	sys_attributes?: SysAttributes[];
-
-
-          @HasOne(() => SysDesc)
-          sys_desc?: SysDesc;
 
     }
