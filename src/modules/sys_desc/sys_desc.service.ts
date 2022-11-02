@@ -1,25 +1,22 @@
 /* eslint-disable prettier/prettier */
-import {SysDesc} from 'src/modules/sys_desc/sys_desc.model';
-
-import {SysAttributes} from 'src/modules/sys_attributes/sys_attributes.model';
-
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
-import { SysTables } from './sys_tables.model';
-import { CreateSysTablesDto } from './dto/create-sys_tables.dto';
-import { UpdateSysTablesDto } from './dto/update-sys_tables.dto';
+import { SysDesc } from './sys_desc.model';
+import { CreateSysDescDto } from './dto/create-sys_desc.dto';
+import { UpdateSysDescDto } from './dto/update-sys_desc.dto';
+import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
 @Injectable()
-      export class SysTablesService {
+      export class SysDescService {
         constructor(
-          @InjectModel(SysTables)
-          private sys_tables: typeof SysTables,
+          @InjectModel(SysDesc)
+          private sys_desc: typeof SysDesc,
           private helpers: HelpersService,
         ) {}
-        create(createSysTablesDto: CreateSysTablesDto, payload: any) {
-          return this.sys_tables.create({
-            ...createSysTablesDto,
+        create(createSysDescDto: CreateSysDescDto, payload: any) {
+          return this.sys_desc.create({
+            ...createSysDescDto,
             created_at: sequelize.fn('NOW'),
             created_by: payload.sub,
           });
@@ -30,31 +27,31 @@ import { UpdateSysTablesDto } from './dto/update-sys_tables.dto';
         ? { [field]: { [sequelize.Op.like]:`%${search}%` }, is_active: 1 }
         : {is_active: 1};
       const { limit, offset } = this.helpers.getPagination(page, size);
-      const data = await this.sys_tables.findAndCountAll({        
+      const data = await this.sys_desc.findAndCountAll({        
         order: [['id', 'DESC']],
-        include: [{model:SysDesc},{model:SysAttributes},],
+        include: [{model:SysTables}],
         where: condition,
         limit,
         offset,
       });
-      const response = this.helpers.getPagingData(data, page, limit,'sys_tables');
+      const response = this.helpers.getPagingData(data, page, limit,'sys_desc');
       return response;
     }
 
     findOne(id: number) {
-      return this.sys_tables.findOne({
+      return this.sys_desc.findOne({
         where: {
           id,
           is_active: 1,
         },
-        include: [{model:SysDesc},{model:SysAttributes},],
+        include: [{model:SysTables}],
       });
     }
 
-  async update(id: number, updateSysTablesDto: UpdateSysTablesDto,payload: any) {
-    const result = await this.sys_tables.update(
+  async update(id: number, updateSysDescDto: UpdateSysDescDto,payload: any) {
+    const result = await this.sys_desc.update(
       { 
-        ...updateSysTablesDto,
+        ...updateSysDescDto,
         updated_at: sequelize.fn('NOW'),
         updated_by: payload.sub,
        },
@@ -65,7 +62,7 @@ import { UpdateSysTablesDto } from './dto/update-sys_tables.dto';
   }
 
   async remove(id: number) {
-    return await this.sys_tables.update(
+    return await this.sys_desc.update(
       {
           is_active: 0,
           deleted_at: sequelize.fn('NOW'),
