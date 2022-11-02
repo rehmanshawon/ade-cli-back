@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import sequelize from 'sequelize';
 import { CreateTableDto } from './dto/create-table.dto';
 import { promisify } from 'util';
 import { exec } from 'child_process';
@@ -27,11 +28,19 @@ import {
   T_UUID,
 } from '../constants/constants';
 import { HelpersService } from '../helpers/helpers.service';
+import { InjectModel } from '@nestjs/sequelize';
+import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
+import { SysAttributes } from 'src/modules/sys_attributes/sys_attributes.model';
+import { response } from 'express';
 @Injectable()
 export class CreateTableService {
-  constructor(private helpers: HelpersService) {}
+  constructor(
+    @InjectModel(SysTables) private sysTables: typeof SysTables,
+    @InjectModel(SysAttributes) private sysAttributes: typeof SysAttributes,
+    private helpers: HelpersService,
+  ) {}
 
-  async createTable(createTableDto: CreateTableDto) {
+  async createTable(createTableDto: CreateTableDto, payload: any) {
     const { tableName, fieldList } = createTableDto;
     // console.log(tableName, fieldList);
     const fileNameSuffix = `create-${tableName}-table`;
@@ -167,7 +176,45 @@ export class CreateTableService {
       shell: 'powershell.exe',
     });
 
-    return createTableDto;
+    try {
+      const response = await this.sysTables.create({
+        table_name: tableName,
+        created_at: sequelize.fn('NOW'),
+        created_by: payload.sub,
+      });
+      await this.sysAttributes.create({
+        attribute_name: 'id',
+        primaryKey: true,
+        sys_table_id: response.id,
+        created_at: sequelize.fn('NOW'),
+        created_by: payload.sub,
+      });
+      for (let i = 0; i < fieldList.length; i++) {
+        await this.sysAttributes.create({
+          attribute_name: fieldList[i].field,
+          primaryKey: false,
+          sys_table_id: response.id,
+          created_at: sequelize.fn('NOW'),
+          created_by: payload.sub,
+        });
+      }
+      return {
+        error: false,
+        statusCode: 201,
+        message: 'record created successfully!',
+        data: response,
+      };
+    } catch (err) {
+      throw new HttpException(
+        {
+          error: true,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: err.errors[0].message,
+          data: [],
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async createUserModule(table: CreateTableDto, association: string[]) {

@@ -1,16 +1,18 @@
 /* eslint-disable prettier/prettier */
-import { SysAttributes } from 'src/modules/sys_attributes/sys_attributes.model';
-
 import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo, HasMany, HasOne, BelongsToMany } from 'sequelize-typescript';
+import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
 
-	@Table({tableName: 'sys_tables',timestamps: false,comment: ""})
-	export class SysTables extends Model {
+	@Table({tableName: 'sys_attributes',timestamps: false,comment: ""})
+	export class SysAttributes extends Model {
 	@Column({primaryKey: true, autoIncrement: true,type: DataType.INTEGER})
 	@Index({name: "PRIMARY", using: "BTREE", order: "ASC", unique: true})
 	id?: number;
 
-	@Column({type: DataType.STRING, unique: true})
-	table_name!: string;
+	@Column({type: DataType.STRING, unique: false})
+	attribute_name!: string;
+
+	@Column({type: DataType.BOOLEAN, unique: false})
+	primaryKey!: boolean;
 
     	@Column({type: DataType.BOOLEAN})
 	is_active!: boolean;
@@ -30,8 +32,13 @@ import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo
 	@Column({type: DataType.DATE})
 	deleted_at?: Date;
 
+	@ForeignKey(() => SysTables)
+	@Column({                                  
+	type: DataType.INTEGER
+	})
+	sys_table_id?: number;
 
-	@HasMany(() => SysAttributes)
-	sys_attributes?: SysAttributes[];
+	@BelongsTo(() => SysTables)
+	SysTable?: SysTables;
 
     }

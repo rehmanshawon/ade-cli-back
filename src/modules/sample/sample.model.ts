@@ -1,10 +1,8 @@
 /* eslint-disable prettier/prettier */
-import { SysAttributes } from 'src/modules/sys_attributes/sys_attributes.model';
-
 import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo, HasMany, HasOne, BelongsToMany } from 'sequelize-typescript';
 
-	@Table({tableName: 'sys_tables',timestamps: false,comment: ""})
-	export class SysTables extends Model {
+	@Table({tableName: 'sample',timestamps: false,comment: ""})
+	export class Sample extends Model {
 	@Column({primaryKey: true, autoIncrement: true,type: DataType.INTEGER})
 	@Index({name: "PRIMARY", using: "BTREE", order: "ASC", unique: true})
 	id?: number;
@@ -29,9 +27,5 @@ import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo
 
 	@Column({type: DataType.DATE})
 	deleted_at?: Date;
-
-
-	@HasMany(() => SysAttributes)
-	sys_attributes?: SysAttributes[];
 
     }

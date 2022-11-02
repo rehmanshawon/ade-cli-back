@@ -1,24 +1,22 @@
 /* eslint-disable prettier/prettier */
-import {SysAttributes} from 'src/modules/sys_attributes/sys_attributes.model';
-
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
-import { SysTables } from './sys_tables.model';
-import { CreateSysTablesDto } from './dto/create-sys_tables.dto';
-import { UpdateSysTablesDto } from './dto/update-sys_tables.dto';
+import { Sample } from './sample.model';
+import { CreateSampleDto } from './dto/create-sample.dto';
+import { UpdateSampleDto } from './dto/update-sample.dto';
 @Injectable()
-      export class SysTablesService {
+      export class SampleService {
         constructor(
-          @InjectModel(SysTables)
-          private sys_tables: typeof SysTables,
+          @InjectModel(Sample)
+          private sample: typeof Sample,
           private helpers: HelpersService,
         ) {}
-       async create(createSysTablesDto: CreateSysTablesDto, payload: any) {
+       async create(createSampleDto: CreateSampleDto, payload: any) {
         try {
-          const response =  await this.sys_tables.create({
-            ...createSysTablesDto,
+          const response =  await this.sample.create({
+            ...createSampleDto,
             created_at: sequelize.fn('NOW'),
             created_by: payload.sub,
           });
@@ -47,14 +45,14 @@ import { UpdateSysTablesDto } from './dto/update-sys_tables.dto';
         : {is_active: 1};
       const { limit, offset } = this.helpers.getPagination(page, size);
       try {
-      const data = await this.sys_tables.findAndCountAll({        
+      const data = await this.sample.findAndCountAll({        
         order: [['id', 'DESC']],
-        include: [{model:SysAttributes},],
+        include: [],
         where: condition,
         limit,
         offset,
       });
-      const response = this.helpers.getPagingData(data, page, limit,'sys_tables');
+      const response = this.helpers.getPagingData(data, page, limit,'sample');
       return {
         error: false,
         statusCode: 200,
@@ -76,12 +74,12 @@ import { UpdateSysTablesDto } from './dto/update-sys_tables.dto';
 
     async findOne(id: number) {
        try {
-          const response = await this.sys_tables.findOne({
+          const response = await this.sample.findOne({
             where: {
               id,
               is_active: 1,
             },
-            include: [{model:SysAttributes},],
+            include: [],
           });
           return {
         error: false,
@@ -102,11 +100,11 @@ import { UpdateSysTablesDto } from './dto/update-sys_tables.dto';
     }
     }
 
-  async update(id: number, updateSysTablesDto: UpdateSysTablesDto,payload: any) {
+  async update(id: number, updateSampleDto: UpdateSampleDto,payload: any) {
     try {
-        const response = await this.sys_tables.update(
+        const response = await this.sample.update(
           { 
-            ...updateSysTablesDto,
+            ...updateSampleDto,
             updated_at: sequelize.fn('NOW'),
             updated_by: payload.sub,
           },
@@ -134,7 +132,7 @@ import { UpdateSysTablesDto } from './dto/update-sys_tables.dto';
 
   async remove(id: number) {
       try {
-          const response = await this.sys_tables.update(
+          const response = await this.sample.update(
             {
                 is_active: 0,
                 deleted_at: sequelize.fn('NOW'),
