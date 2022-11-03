@@ -1,35 +1,37 @@
 /* eslint-disable prettier/prettier */
-import { Sample4Module } from 'src/modules/sample4/sample4.module';
+import { RoleTestModule } from 'src/modules/role_test/role_test.module';
 
-import {Sample4} from 'src/modules/sample4/sample4.model';
+import { RoleTest } from 'src/modules/role_test/role_test.model';
 
-import { Sample3Module } from 'src/modules/sample3/sample3.module';
+import { SysRoleTableModule } from 'src/modules/sys_role_table/sys_role_table.module';
 
-import {Sample3} from 'src/modules/sample3/sample3.model';
+import { SysRoleTable } from 'src/modules/sys_role_table/sys_role_table.model';
 
-import { SampleModule } from 'src/modules/sample/sample.module';
+import { SysUsersModule } from 'src/modules/sys_users/sys_users.module';
 
-import {Sample} from 'src/modules/sample/sample.model';
+import { SysUsers } from 'src/modules/sys_users/sys_users.model';
+
+import { SysRolesModule } from 'src/modules/sys_roles/sys_roles.module';
+
+import { SysRoles } from 'src/modules/sys_roles/sys_roles.model';
 
 import { SysAttributesModule } from 'src/modules/sys_attributes/sys_attributes.module';
 
-import {SysAttributes} from 'src/modules/sys_attributes/sys_attributes.model';
+import { SysAttributes } from 'src/modules/sys_attributes/sys_attributes.model';
 
 import { SysTablesModule } from 'src/modules/sys_tables/sys_tables.module';
 
-import {SysTables} from 'src/modules/sys_tables/sys_tables.model';
-
+import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
+import { AuthModule } from './modules/sys-auth/sys-auth.module';
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SysUser } from './modules/sys-users/models/sys-users.model';
-import { UserModule } from './modules/sys-users/sys-users.module';
-import { AuthModule } from './modules/sys-auth/sys-auth.module';
+
 import { ConfigModule } from '@nestjs/config';
-import { SysRolesModule } from './modules/sys_roles/sys_roles.module';
-import { SysRole } from './modules/sys_roles/models/sys-roles.model';
 import { CreateTableModule } from './helpers/create-table/create-table.module';
+import { APP_FILTER } from '@nestjs/core';
+import { CustomeExceptionsFilter } from './custome-exceptions.filter';
 
 @Module({
   imports: [
@@ -50,14 +52,28 @@ import { CreateTableModule } from './helpers/create-table/create-table.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [Sample4,Sample3,Sample,SysAttributes,SysTables,SysUser, SysRole],
+      models: [
+        RoleTest,
+        SysRoleTable,
+        SysUsers,
+        SysRoles,
+        SysAttributes,
+        SysTables,
+      ],
     }),
-    UserModule,
     AuthModule,
+    CreateTableModule,
+    RoleTestModule,
+    SysRoleTableModule,
+    SysUsersModule,
     SysRolesModule,
-    CreateTableModule,Sample4Module,Sample3Module,SampleModule,SysAttributesModule,SysTablesModule,
+    SysAttributesModule,
+    SysTablesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_FILTER, useClass: CustomeExceptionsFilter },
+  ],
 })
 export class AppModule {}

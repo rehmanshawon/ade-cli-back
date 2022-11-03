@@ -18,6 +18,7 @@ import {
   D_UUID,
   S_BOOL,
   S_DATE,
+  S_ENUM,
   S_INT,
   S_STRING,
   S_UUID,
@@ -117,7 +118,18 @@ export class CreateTableService {
                 },\n\t\t\t\t\t`;
         continue;
       }
-
+      if (fieldList[i].isEnum) {
+        fieldListString += `${fieldList[i].field}:{
+                    type:${S_ENUM},
+                    values: [${fieldList[i].enum.enumValues.map(
+                      (val) => "'" + val + "'",
+                    )}],                    
+                    allowNull:${
+                      fieldList[i].optional
+                    },                                                 
+                },\n\t\t\t\t\t`;
+        continue;
+      }
       fieldListString += `${fieldList[i].field}:{
                     type:${fieldType},
                     allowNull:${fieldList[i].optional},                                   
@@ -690,6 +702,8 @@ export class ${modelName}Module {}
       importString: string;
       hasString: string;
     };
+    let enumDefinitionString = '';
+    let enumColumnString = '';
     const updateForeignModelStructure: updateFileData[] = [];
     const { tableName, fieldList } = createTableDto;
     const modulePath = `src/modules/${tableName}`;
@@ -872,6 +886,17 @@ export class ${modelName}Module {}
 
         continue;
       }
+      if (fieldList[i].enum) {
+        enumDefinitionString += `export const ${
+          fieldList[i].enum.enumName
+        }Types = [${fieldList[i].enum.enumValues.map(
+          (val) => "'" + val + "'",
+        )}];`;
+        enumColumnString += `
+  \t@Column(DataType.ENUM({ values: ${fieldList[i].enum.enumName}Types }))
+  \t${fieldName}${fieldList[i].optional ? '?' : '!'}: string;\n`;
+        continue;
+      }
       // we will process the other fields for the moment
       // the fieldlist field is neither primary nor foreign key. therefore, it's a normal field
       const requiredTypeString = fieldList[i].optional ? '?' : '!';
@@ -902,6 +927,7 @@ export class ${modelName}Module {}
 \tdeleted_at?: Date;\n`;
     // lets process model information for this table
     data += importModelString;
+    data += enumDefinitionString;
     const tableDecorationString = `\n\t@Table({tableName: '${tableName}',timestamps: false,comment: ""})\n`;
 
     data += tableDecorationString;
@@ -911,6 +937,7 @@ export class ${modelName}Module {}
 
     data += primaryKeyString;
     data += generalColumnString;
+    data += enumColumnString;
     data += mandatoryColumnString;
     data += foreignKeyString;
     data += belongsToString;

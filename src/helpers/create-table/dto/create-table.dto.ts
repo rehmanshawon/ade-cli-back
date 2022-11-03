@@ -24,6 +24,12 @@ class referenceDefinition {
   join_table: string; // required for N:N relationship
 }
 
+class enumDefinition {
+  enumValues: string[];
+  defaultValue: string;
+  enumName: string;
+}
+
 class fieldDefinition {
   @IsString()
   field: string;
@@ -52,12 +58,19 @@ class fieldDefinition {
   @IsOptional()
   maxLength: number = 0;
 
+  @IsString()
+  @IsOptional()
+  isEnum: boolean = false;
+
   @IsBoolean()
   @IsOptional()
   foreignKey: boolean = false;
 
   @IsOptional()
   reference: referenceDefinition;
+
+  @IsOptional()
+  enum: enumDefinition;
 }
 
 export class CreateTableDto {

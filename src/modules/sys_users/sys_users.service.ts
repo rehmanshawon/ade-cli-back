@@ -1,35 +1,33 @@
 /* eslint-disable prettier/prettier */
-import {SysRoleTable} from 'src/modules/sys_role_table/sys_role_table.model';
-
-import { SysUsers } from 'src/modules/sys_users/sys_users.model';
-
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
-import { SysRoles } from './sys_roles.model';
-import { CreateSysRolesDto } from './dto/create-sys_roles.dto';
-import { UpdateSysRolesDto } from './dto/update-sys_roles.dto';
+import { SysUsers } from './sys_users.model';
+import { CreateSysUsersDto } from './dto/create-sys_users.dto';
+import { UpdateSysUsersDto } from './dto/update-sys_users.dto';
+import { SysRoles } from 'src/modules/sys_roles/sys_roles.model';
 @Injectable()
-export class SysRolesService {
+export class SysUsersService {
   constructor(
-    @InjectModel(SysRoles)
-    private sys_roles: typeof SysRoles,
+    @InjectModel(SysUsers)
+    private sys_users: typeof SysUsers,
     private helpers: HelpersService,
   ) {}
-  async create(createSysRolesDto: CreateSysRolesDto, payload: any) {
+  async create(createSysUsersDto: CreateSysUsersDto): Promise<SysUsers> {
     try {
-      const response = await this.sys_roles.create({
-        ...createSysRolesDto,
+      const response = await this.sys_users.create({
+        ...createSysUsersDto,
         created_at: sequelize.fn('NOW'),
-        created_by: payload.sub,
+        created_by: null,
       });
-      return {
-        error: false,
-        statusCode: 201,
-        message: 'record created successfully!',
-        data: response,
-      };
+      // return {
+      //   error: false,
+      //   statusCode: 201,
+      //   message: 'record created successfully!',
+      //   data: response,
+      // };
+      return response;
     } catch (err) {
       throw new HttpException(
         {
@@ -49,9 +47,9 @@ export class SysRolesService {
       : { is_active: 1 };
     const { limit, offset } = this.helpers.getPagination(page, size);
     try {
-      const data = await this.sys_roles.findAndCountAll({
+      const data = await this.sys_users.findAndCountAll({
         order: [['id', 'DESC']],
-        include: [{model:SysRoleTable},{ model: SysUsers, attributes: { exclude: ['password'] } }],
+        include: [{ model: SysRoles }],
         where: condition,
         limit,
         offset,
@@ -60,7 +58,7 @@ export class SysRolesService {
         data,
         page,
         limit,
-        'sys_roles',
+        'sys_users',
       );
       return {
         error: false,
@@ -81,21 +79,22 @@ export class SysRolesService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<SysUsers> {
     try {
-      const response = await this.sys_roles.findOne({
+      const response = await this.sys_users.findOne({
         where: {
           id,
           is_active: 1,
         },
-        include: [{model:SysRoleTable},{ model: SysUsers, attributes: { exclude: ['password'] } }],
+        include: [{ model: SysRoles }],
       });
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Success!',
-        data: response,
-      };
+      // return {
+      //   error: false,
+      //   statusCode: 200,
+      //   message: 'Success!',
+      //   data: response,
+      // };
+      return response;
     } catch (err) {
       throw new HttpException(
         {
@@ -109,11 +108,40 @@ export class SysRolesService {
     }
   }
 
-  async update(id: number, updateSysRolesDto: UpdateSysRolesDto, payload: any) {
+  async findOneByEmail(email: string): Promise<SysUsers> {
     try {
-      const response = await this.sys_roles.update(
+      const response = await this.sys_users.findOne({
+        where: {
+          email,
+          is_active: 1,
+        },
+        include: [{ model: SysRoles }],
+      });
+      // return {
+      //   error: false,
+      //   statusCode: 200,
+      //   message: 'Success!',
+      //   data: response,
+      // };
+      return response;
+    } catch (err) {
+      throw new HttpException(
         {
-          ...updateSysRolesDto,
+          error: true,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: err.errors[0].message,
+          data: [],
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async update(id: number, updateSysUsersDto: UpdateSysUsersDto, payload: any) {
+    try {
+      const response = await this.sys_users.update(
+        {
+          ...updateSysUsersDto,
           updated_at: sequelize.fn('NOW'),
           updated_by: payload.sub,
         },
@@ -141,7 +169,7 @@ export class SysRolesService {
 
   async remove(id: number) {
     try {
-      const response = await this.sys_roles.update(
+      const response = await this.sys_users.update(
         {
           is_active: 0,
           deleted_at: sequelize.fn('NOW'),

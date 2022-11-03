@@ -7,7 +7,7 @@ import { JwtAuthGuard } from './modules/sys-auth/jwt-auth.guard';
 
 @Controller()
 export class AppController {
-  constructor(private authService: AuthService){}
+  constructor(private authService: AuthService) {}
 
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
@@ -17,7 +17,7 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req){
+  getProfile(@Request() req) {
     return req.user;
   }
   // constructor(private readonly appService: AppService) {}
