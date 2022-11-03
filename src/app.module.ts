@@ -1,4 +1,8 @@
 /* eslint-disable prettier/prettier */
+import { Sample4Module } from 'src/modules/sample4/sample4.module';
+
+import {Sample4} from 'src/modules/sample4/sample4.model';
+
 import { Sample3Module } from 'src/modules/sample3/sample3.module';
 
 import {Sample3} from 'src/modules/sample3/sample3.model';
@@ -46,12 +50,12 @@ import { CreateTableModule } from './helpers/create-table/create-table.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [Sample3,Sample,SysAttributes,SysTables,SysUser, SysRole],
+      models: [Sample4,Sample3,Sample,SysAttributes,SysTables,SysUser, SysRole],
     }),
     UserModule,
     AuthModule,
     SysRolesModule,
-    CreateTableModule,Sample3Module,SampleModule,SysAttributesModule,SysTablesModule,
+    CreateTableModule,Sample4Module,Sample3Module,SampleModule,SysAttributesModule,SysTablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
