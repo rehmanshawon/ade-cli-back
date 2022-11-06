@@ -47,7 +47,8 @@
     "sequelize-cli": "^6.5.1",
     "sequelize-typescript": "^2.1.3",
     "sequelize-typescript-generator": "^8.4.4",
-    "shelljs": "^0.8.5"
+    "shelljs": "^0.8.5",
+    "slugify": "^1.6.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

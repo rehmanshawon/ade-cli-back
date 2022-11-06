@@ -2,6 +2,7 @@
 import { SysUserModule } from 'src/modules/sys_user_module/sys_user_module.model';
 
 import { SysMenus } from 'src/modules/sys_menus/sys_menus.model';
+import slugify from 'slugify';
 
 import {
   ForbiddenException,
@@ -41,8 +42,10 @@ export class SysModulesService {
         },
       });
       if (!canCreate) throw new UnauthorizedException();
+      const module_dto = createSysModulesDto;
+      module_dto.module_url = slugify(createSysModulesDto.module_name);
       const response = await this.sys_modules.create({
-        ...createSysModulesDto,
+        ...module_dto,
         created_at: sequelize.fn('NOW'),
         created_by: payload.sub,
       });
