@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import {SysUserModule} from 'src/modules/sys_user_module/sys_user_module.model';
+import { SysUserModule } from 'src/modules/sys_user_module/sys_user_module.model';
 
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
@@ -51,7 +51,7 @@ export class SysUsersService {
     try {
       const data = await this.sys_users.findAndCountAll({
         order: [['id', 'DESC']],
-        include: [{model:SysUserModule},{ model: SysRoles }],
+        include: [{ model: SysUserModule }, { model: SysRoles }],
         where: condition,
         limit,
         offset,
@@ -88,7 +88,7 @@ export class SysUsersService {
           id,
           is_active: 1,
         },
-        include: [{model:SysUserModule},{ model: SysRoles }],
+        include: [{ model: SysUserModule }, { model: SysRoles }],
       });
       // return {
       //   error: false,
@@ -117,7 +117,7 @@ export class SysUsersService {
           email,
           is_active: 1,
         },
-        include: [{model:SysUserModule},{ model: SysRoles }],
+        include: [{ model: SysUserModule }, { model: SysRoles }],
       });
       // return {
       //   error: false,
