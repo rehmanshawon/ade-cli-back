@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import sequelize from 'sequelize';
 import { CreateTableDto } from './dto/create-table.dto';
 import { promisify } from 'util';
 import { exec } from 'child_process';
@@ -17,6 +18,7 @@ import {
   D_UUID,
   S_BOOL,
   S_DATE,
+  S_ENUM,
   S_INT,
   S_STRING,
   S_UUID,
@@ -27,11 +29,19 @@ import {
   T_UUID,
 } from '../constants/constants';
 import { HelpersService } from '../helpers/helpers.service';
+import { InjectModel } from '@nestjs/sequelize';
+import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
+import { SysAttributes } from 'src/modules/sys_attributes/sys_attributes.model';
+import { response } from 'express';
 @Injectable()
 export class CreateTableService {
-  constructor(private helpers: HelpersService) {}
+  constructor(
+    @InjectModel(SysTables) private sysTables: typeof SysTables,
+    @InjectModel(SysAttributes) private sysAttributes: typeof SysAttributes,
+    private helpers: HelpersService,
+  ) {}
 
-  async createTable(createTableDto: CreateTableDto) {
+  async createTable(createTableDto: CreateTableDto, payload: any) {
     const { tableName, fieldList } = createTableDto;
     // console.log(tableName, fieldList);
     const fileNameSuffix = `create-${tableName}-table`;
@@ -108,7 +118,18 @@ export class CreateTableService {
                 },\n\t\t\t\t\t`;
         continue;
       }
-
+      if (fieldList[i].isEnum) {
+        fieldListString += `${fieldList[i].field}:{
+                    type:${S_ENUM},
+                    values: [${fieldList[i].enum.enumValues.map(
+                      (val) => "'" + val + "'",
+                    )}],                    
+                    allowNull:${
+                      fieldList[i].optional
+                    },                                                 
+                },\n\t\t\t\t\t`;
+        continue;
+      }
       fieldListString += `${fieldList[i].field}:{
                     type:${fieldType},
                     allowNull:${fieldList[i].optional},                                   
@@ -167,7 +188,45 @@ export class CreateTableService {
       shell: 'powershell.exe',
     });
 
-    return createTableDto;
+    try {
+      const response = await this.sysTables.create({
+        table_name: tableName,
+        created_at: sequelize.fn('NOW'),
+        created_by: payload.sub,
+      });
+      await this.sysAttributes.create({
+        attribute_name: 'id',
+        primaryKey: true,
+        sys_table_id: response.id,
+        created_at: sequelize.fn('NOW'),
+        created_by: payload.sub,
+      });
+      for (let i = 0; i < fieldList.length; i++) {
+        await this.sysAttributes.create({
+          attribute_name: fieldList[i].field,
+          primaryKey: false,
+          sys_table_id: response.id,
+          created_at: sequelize.fn('NOW'),
+          created_by: payload.sub,
+        });
+      }
+      return {
+        error: false,
+        statusCode: 201,
+        message: 'record created successfully!',
+        data: response,
+      };
+    } catch (err) {
+      throw new HttpException(
+        {
+          error: true,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: err.errors[0].message,
+          data: [],
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async createUserModule(table: CreateTableDto, association: string[]) {
@@ -257,20 +316,22 @@ export class Update${modelName}Dto extends PartialType(Create${modelName}Dto) {}
 
     //now lets write the crud service file on the model
     let serviceFileData = `/* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException,UnauthorizedException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
 import { ${modelName} } from './${tableName}.model';
 import { Create${modelName}Dto } from './dto/create-${tableName}.dto';
 import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
+import { SysTables } from '../sys_tables/sys_tables.model';
+import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
 `;
     for (let i = 0; i < association.length; i++) {
       const impModelString = `import { ${
         association[i]
-      } } from 'src/modules/${association[i].toLowerCase()}/${association[
-        i
-      ].toLowerCase()}.model';\n`;
+      } } from 'src/modules/${await this.helpers.toSnakeCase(
+        association[i],
+      )}/${await this.helpers.toSnakeCase(association[i])}.model';\n`;
       serviceFileData += impModelString;
     }
     const arrayOfIncludes = association.map((m) => `{model:${m}}`);
@@ -280,23 +341,55 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
         constructor(
           @InjectModel(${modelName})
           private ${tableName}: typeof ${modelName},
+          @InjectModel(SysRoleTable) 
+          private role_table: typeof SysRoleTable,
+          @InjectModel(SysTables) 
+          private sysTables: typeof SysTables,
           private helpers: HelpersService,
         ) {}
-        create(create${modelName}Dto: Create${modelName}Dto, payload: any) {
-          return this.${tableName}.create({
+       async create(create${modelName}Dto: Create${modelName}Dto, payload: any) {
+        try {
+          const thisTableInfo = await this.sysTables.findOne({where: { table_name: '${tableName}' }});
+          if (!thisTableInfo) throw new ForbiddenException();
+          const canCreate = await this.role_table.findOne({
+            where: {
+              role_id: payload.role,
+              table_id: thisTableInfo.id,
+              access_type: 'All' || 'Create',
+            },
+          });
+          if (!canCreate) throw new UnauthorizedException();
+          const response =  await this.${tableName}.create({
             ...create${modelName}Dto,
             created_at: sequelize.fn('NOW'),
             created_by: payload.sub,
           });
-        }
+          return response;
+        }catch (err) {
+      throw err;
+    }
+  }
 
-    async findAll(page: number, size: number, field: string, search: string) {
+    async findAll(page: number, size: number, field: string, search: string,payload: any) {
       const condition = field
         ? { [field]: { [sequelize.Op.like]:` +
       '`%${search}%`' +
       ` }, is_active: 1 }
         : {is_active: 1};
       const { limit, offset } = this.helpers.getPagination(page, size);
+      try {
+        const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: '${tableName}' },
+      });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canRead = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Read',
+        },
+      });
+      if (!canRead) throw new UnauthorizedException();
       const data = await this.${tableName}.findAndCountAll({        
         order: [['id', 'DESC']],
         include: [${arrayOfIncludes}],
@@ -306,39 +399,92 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
       });
       const response = this.helpers.getPagingData(data, page, limit,'${tableName}');
       return response;
+    }catch (err) {
+      throw err;
     }
+  }
 
-    findOne(id: number) {
-      return this.${tableName}.findOne({
-        where: {
-          id,
-          is_active: 1,
-        },
-        include: [${arrayOfIncludes}],
+    async findOne(id: number, payload: any) {
+       try {
+        const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: '${tableName}' },
       });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canRead = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Read',
+        },
+      });
+      if (!canRead) throw new UnauthorizedException();
+          const response = await this.${tableName}.findOne({
+            where: {
+              id,
+              is_active: 1,
+            },
+            include: [${arrayOfIncludes}],
+          });
+          return response;
+      } catch (err) {
+      throw err;
+    }
     }
 
   async update(id: number, update${modelName}Dto: Update${modelName}Dto,payload: any) {
-    const result = await this.${tableName}.update(
-      { 
-        ...update${modelName}Dto,
-        updated_at: sequelize.fn('NOW'),
-        updated_by: payload.sub,
-       },
-      { where: { id }, returning: true },
-    );
+    try {
+      const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: '${tableName}' },
+      });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canUpdate = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Update',
+        },
+      });
+      if (!canUpdate) throw new UnauthorizedException();
+        const response = await this.${tableName}.update(
+          { 
+            ...update${modelName}Dto,
+            updated_at: sequelize.fn('NOW'),
+            updated_by: payload.sub,
+          },
+          { where: { id }, returning: true },
+        );
 
-    return result;
+    return response;
+    }catch (err) {
+      throw err;
+    }
   }
 
-  async remove(id: number) {
-    return await this.${tableName}.update(
-      {
-          is_active: 0,
-          deleted_at: sequelize.fn('NOW'),
+  async remove(id: number, payload: any) {
+      try {
+        const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: '${tableName}' },
+      });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canDelete = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Delete',
         },
-        { where: { id } },
-      );
+      });
+      if (!canDelete) throw new UnauthorizedException();
+          const response = await this.${tableName}.update(
+            {
+                is_active: 0,
+                deleted_at: sequelize.fn('NOW'),
+              },
+              { where: { id } },
+            );
+            return response;
+      }catch (err) {
+        throw err;
+      }
     }
   }
   \n`;
@@ -372,18 +518,23 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../sys-auth/jwt-auth.guard';
+import { HelpersService } from 'src/helpers/helpers/helpers.service';
 import { ${modelName}Service } from './${tableName}.service';
 import { Create${modelName}Dto } from './dto/create-${tableName}.dto';
 import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
 
 @Controller('${tableName}')
 export class ${modelName}Controller {
-  constructor(private readonly ${tableName}Service: ${modelName}Service) {}
+  constructor(private readonly ${await this.helpers.uncapitalizeFirstLetter(
+    modelName,
+  )}Service: ${modelName}Service) {}
 
     @UseGuards(JwtAuthGuard)
     @Post()
     create(@Body() create${modelName}Dto: Create${modelName}Dto, @Request() req) {
-      return this.${tableName}Service.create(create${modelName}Dto, req.user);
+      return this.${await this.helpers.uncapitalizeFirstLetter(
+        modelName,
+      )}Service.create(create${modelName}Dto, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -391,13 +542,17 @@ export class ${modelName}Controller {
     async findAll(@Request() req) {
       const { page, size, field, search } = req.query;
 
-      return await this.${tableName}Service.findAll(page, size, field, search);
+      return await this.${await this.helpers.uncapitalizeFirstLetter(
+        modelName,
+      )}Service.findAll(page, size, field, search,req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get(':id')
-    findOne(@Param('id') id: string) {
-      return this.${tableName}Service.findOne(+id);
+    findOne(@Param('id') id: string, @Request() req) {
+      return this.${await this.helpers.uncapitalizeFirstLetter(
+        modelName,
+      )}Service.findOne(+id, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -407,13 +562,17 @@ export class ${modelName}Controller {
       @Body() update${modelName}Dto: Update${modelName}Dto,
       @Request() req,
     ) {
-      return this.${tableName}Service.update(+id, update${modelName}Dto, req.user);
+      return this.${await this.helpers.uncapitalizeFirstLetter(
+        modelName,
+      )}Service.update(+id, update${modelName}Dto, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
-    remove(@Param('id') id: string) {
-      return this.${tableName}Service.remove(+id);
+    remove(@Param('id') id: string, @Request() req) {
+      return this.${await this.helpers.uncapitalizeFirstLetter(
+        modelName,
+      )}Service.remove(+id, req.user);
     }
 
   }
@@ -430,9 +589,11 @@ import { HelpersModule } from 'src/helpers/helpers/helpers.module';
 import { ${modelName}Controller } from './${tableName}.controller';
 import { ${modelName}Service } from './${tableName}.service';
 import { ${modelName} } from './${tableName}.model';
+import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
+import { SysTables } from '../sys_tables/sys_tables.model';
 
 @Module({
-  imports: [SequelizeModule.forFeature([${modelName}]), HelpersModule],
+  imports: [SequelizeModule.forFeature([${modelName}, SysRoleTable, SysTables]), HelpersModule],
   providers: [${modelName}Service],
   controllers: [${modelName}Controller],
 })
@@ -450,12 +611,14 @@ export class ${modelName}Module {}
   }
 
   async updateAssociateService(associates: string[], modelName: string) {
+    const modelPath = `src/modules/${await this.helpers.toSnakeCase(
+      modelName,
+    )}/${await this.helpers.toSnakeCase(modelName)}.model`;
     for (let i = 0; i < associates.length; i++) {
       // open the associate service file
-      const fileName = `src/modules/${associates[i].toLowerCase()}/${associates[
-        i
-      ].toLowerCase()}.service.ts`;
-      const modelPath = `src/modules/${modelName.toLowerCase()}/${modelName.toLowerCase()}.model`;
+      const fileName = `src/modules/${await this.helpers.toSnakeCase(
+        associates[i],
+      )}/${await this.helpers.toSnakeCase(associates[i])}.service.ts`;
       const importString = `import {${modelName}} from '${modelPath}';\n`;
       const splitter = 'include: [';
 
@@ -534,7 +697,15 @@ export class ${modelName}Module {}
     let HasManyString = '';
     let HasOneString = '';
     let belongsToManyString = '';
-
+    type updateFileData = {
+      modelName: string;
+      modelFile: string;
+      importString: string;
+      hasString: string;
+    };
+    let enumDefinitionString = '';
+    let enumColumnString = '';
+    const updateForeignModelStructure: updateFileData[] = [];
     const { tableName, fieldList } = createTableDto;
     const modulePath = `src/modules/${tableName}`;
     if (!this.helpers.checkIfFileOrDirectoryExists(modulePath)) {
@@ -583,7 +754,7 @@ export class ${modelName}Module {}
 \t${thisTableKey}?: ${fieldList[i].type};\n`;
           belongsToString += `
 \t@BelongsTo(() => ${foreignModel})
-\t${thisTableKey.split('_')[0]}?: ${foreignModel};\n`;
+\t${await this.helpers.returnSingularized(foreignModel)}?: ${foreignModel};\n`;
           belongsTo.push(foreignModel); // for inclusion in sequelize crud service
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file
@@ -594,6 +765,60 @@ export class ${modelName}Module {}
 \t@HasMany(() => ${thisModel})
 \t${thisTable}?: ${thisModel}[];\n`;
           has.push(thisModel); // for inclusion in crud service
+          const foreignModelFilePath = `src/modules/${foreignTable}/${foreignTable}.model.ts`;
+          // lets push the foreign model update data for later file writing
+
+          updateForeignModelStructure.push({
+            modelName: foreignModel,
+            modelFile: foreignModelFilePath,
+            importString: foriegnTableImportModelString,
+            hasString: HasManyString,
+          });
+        } // 1:N relatioship is done
+        if (fieldList[i].reference.relation.toLowerCase() === '1:1') {
+          // in this case foreignKey atttribute should be added before the primaryKey column
+          const tempStr = primaryKeyString;
+          primaryKeyString = `@ForeignKey(() => ${foreignModel})\n`;
+          primaryKeyString += tempStr;
+          // now define the belongs to assosiation
+          belongsToString += `
+          @BelongsTo(() => ${foreignModel})
+          ${await this.helpers.returnSingularized(
+            foreignModel,
+          )}?: ${foreignModel};\n`;
+          belongsTo.push(foreignModel);
+          // we now have to modify the foreign table also to reflect the association with this table
+          // first import this table to foreign model file
+          foriegnTableImportModelString += `import { ${thisModel} } from 'src/modules/${thisTable}/${thisTable}.model';\n`;
+          // add the primary key of this model to foreign model
+          foreignTableForeignKeyString = `
+          @Column({            
+            type: DataType.INTEGER 
+          })
+          @Index({
+            name: "${foreignTable}_${thisTable}_${thisTableKey}_fk",
+            using: "BTREE",
+            order: "ASC",
+            unique: false 
+          })
+          ${thisTableKey}!: number;\n`;
+          // defing hasone association
+          HasOneString += `
+          @HasOne(() => ${thisModel})
+          ${await this.helpers.returnSingularized(
+            thisTable,
+          )}?: ${thisModel};\n`;
+          has.push(thisModel);
+
+          const foreignModelFilePath = `src/modules/${foreignTable}/${foreignTable}.model.ts`;
+          // lets push the foreign model update data for later file writing
+
+          updateForeignModelStructure.push({
+            modelName: foreignModel,
+            modelFile: foreignModelFilePath,
+            importString: foriegnTableImportModelString,
+            hasString: foreignTableForeignKeyString + HasOneString,
+          });
           // we need to update the foreign table right now, because the
           // foreign key may point to a different table
           if (
@@ -613,40 +838,9 @@ export class ${modelName}Module {}
             await this.helpers.insertAtLine(
               `src/modules/${foreignTable}/${foreignTable}.model.ts`,
               foreignModelFileTotalLine - 2,
-              HasManyString,
+              HasOneString,
             );
           }
-        } // 1:N relatioship is done
-        if (fieldList[i].reference.relation.toLowerCase() === '1:1') {
-          // in this case foreignKey atttribute should be added before the primaryKey column
-          const tempStr = primaryKeyString;
-          primaryKeyString = `@ForeignKey(() => ${foreignModel})\n`;
-          primaryKeyString += tempStr;
-          // now define the belongs to assosiation
-          belongsToString += `
-          @BelongsTo(() => ${foreignModel})
-          ${thisTableKey.split('_')[0]}?: ${foreignModel};\n`;
-          belongsTo.push(foreignModel);
-          // we now have to modify the foreign table also to reflect the association with this table
-          // first import this table to foreign model file
-          foriegnTableImportModelString += `import { ${thisModel} } from 'src/modules/${thisTable}/models/${thisTable}.model';\n`;
-          // add the primary key of this model to foreign model
-          foreignTableForeignKeyString += `
-          @Column({            
-            type: DataType.INTEGER 
-          })
-          @Index({
-            name: "${foreignTable}_${thisTable}_${thisTableKey}_fk",
-            using: "BTREE",
-            order: "ASC",
-            unique: false 
-          })
-          ${thisTableKey}!: number;\n`;
-          // defing hasone association
-          HasOneString += `
-          @HasOne(() => ${thisModel})
-          ${thisTable}?: ${thisModel};\n`;
-          has.push(thisModel);
           //done
         }
         if (fieldList[i].reference.relation.toLowerCase() === 'm:n') {
@@ -693,6 +887,17 @@ export class ${modelName}Module {}
 
         continue;
       }
+      if (fieldList[i].enum) {
+        enumDefinitionString += `export const ${
+          fieldList[i].enum.enumName
+        }Types = [${fieldList[i].enum.enumValues.map(
+          (val) => "'" + val + "'",
+        )}];`;
+        enumColumnString += `
+  \t@Column(DataType.ENUM({ values: ${fieldList[i].enum.enumName}Types }))
+  \t${fieldName}${fieldList[i].optional ? '?' : '!'}: string;\n`;
+        continue;
+      }
       // we will process the other fields for the moment
       // the fieldlist field is neither primary nor foreign key. therefore, it's a normal field
       const requiredTypeString = fieldList[i].optional ? '?' : '!';
@@ -723,6 +928,7 @@ export class ${modelName}Module {}
 \tdeleted_at?: Date;\n`;
     // lets process model information for this table
     data += importModelString;
+    data += enumDefinitionString;
     const tableDecorationString = `\n\t@Table({tableName: '${tableName}',timestamps: false,comment: ""})\n`;
 
     data += tableDecorationString;
@@ -732,6 +938,7 @@ export class ${modelName}Module {}
 
     data += primaryKeyString;
     data += generalColumnString;
+    data += enumColumnString;
     data += mandatoryColumnString;
     data += foreignKeyString;
     data += belongsToString;
@@ -759,6 +966,29 @@ export class ${modelName}Module {}
       await this.addModelToApp(result[i]);
     }
 
+    for (let j = 0; j < updateForeignModelStructure.length; j++) {
+      // we need to update the foreign models also
+      if (
+        !this.helpers.checkFileForAString(
+          updateForeignModelStructure[j].modelFile,
+          `${tableName}.model`,
+        )
+      ) {
+        await this.helpers.insertAtLine(
+          updateForeignModelStructure[j].modelFile,
+          1,
+          updateForeignModelStructure[j].importString,
+        );
+        const foreignModelFileTotalLine = await this.helpers.getTotalLine(
+          updateForeignModelStructure[j].modelFile,
+        );
+        await this.helpers.insertAtLine(
+          updateForeignModelStructure[j].modelFile,
+          foreignModelFileTotalLine - 2,
+          updateForeignModelStructure[j].hasString,
+        );
+      }
+    }
     return result;
   }
 
@@ -799,7 +1029,9 @@ export class ${modelName}Module {}
   async addModelToApp(tableName: string) {
     const modelToAdd = await this.helpers.capitalizeFirstLetter(tableName);
     const fileName = 'src/app.module.ts';
-    const modelPath = `src/modules/${tableName}/${tableName}.model`;
+    const modelPath = `src/modules/${await this.helpers.toSnakeCase(
+      tableName,
+    )}/${await this.helpers.toSnakeCase(tableName)}.model`;
     const importString = `import {${modelToAdd}} from '${modelPath}';\n`;
     const splitter = 'models: [';
 

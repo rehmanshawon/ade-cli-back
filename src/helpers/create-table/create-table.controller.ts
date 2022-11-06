@@ -18,10 +18,8 @@ export class CreateTableController {
   constructor(private createTableService: CreateTableService) {}
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createTable(@Body() table: CreateTableDto) {
-    const newTable: CreateTableDto = await this.createTableService.createTable(
-      table,
-    );
+  async createTable(@Body() table: CreateTableDto, @Request() req) {
+    await this.createTableService.createTable(table, req.user);
 
     const association = await this.createTableService.createModel(table);
 
