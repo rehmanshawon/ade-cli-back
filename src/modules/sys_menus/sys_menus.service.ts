@@ -76,21 +76,31 @@ export class SysMenusService {
       });
       if (!canRead) throw new UnauthorizedException();
       const data = await this.sys_menus.findAndCountAll({
-        order: [['id', 'DESC']],
+        order: [['id', 'ASC']],
         include: [{ model: SysRoleMenu }, { model: SysModules }],
         where: condition,
         limit,
         offset,
       });
+      const menus = [];
+      for (let i = 0; i < data.rows.length; i++) {
+        const children = [];
+        for (let j = 0; j < data.rows.length; j++) {
+          if (data.rows[i].id === data.rows[j].parent_menu)
+            children.push(data.rows[j].get());
+        }
+        const menu = data.rows[i].get();
+        menu['children'] = children;
+        menus.push(menu);
+      }
+      data['rows'] = menus;
       const response = this.helpers.getPagingData(
         data,
         page,
         limit,
         'sys_menus',
       );
-      //const menus = response;
 
-      console.log(data.rows.forEach((d) => d.get({ plain: true })));
       return response;
     } catch (err) {
       throw err;
