@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { Rashed } from 'src/modules/rashed/rashed.model';
 
 import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo, HasMany, HasOne, BelongsToMany } from 'sequelize-typescript';
 
@@ -28,10 +27,6 @@ import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo
 	updated_at?: Date;
 
 	@Column({type: DataType.DATE})
-	deleted_at?: Date;
-
-
-	@HasMany(() => Rashed)
-	rashed?: Rashed[];
+	deleted_at?: Date;	
 
     }

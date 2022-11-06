@@ -1,27 +1,24 @@
 /* eslint-disable prettier/prettier */
-import { RashedModule } from 'src/modules/rashed/rashed.module';
-
-import {Rashed} from 'src/modules/rashed/rashed.model';
 
 import { SysUserModuleModule } from 'src/modules/sys_user_module/sys_user_module.module';
 
-import {SysUserModule} from 'src/modules/sys_user_module/sys_user_module.model';
+import { SysUserModule } from 'src/modules/sys_user_module/sys_user_module.model';
 
 import { SysRoleMenuModule } from 'src/modules/sys_role_menu/sys_role_menu.module';
 
-import {SysRoleMenu} from 'src/modules/sys_role_menu/sys_role_menu.model';
+import { SysRoleMenu } from 'src/modules/sys_role_menu/sys_role_menu.model';
 
 import { SysMenusModule } from 'src/modules/sys_menus/sys_menus.module';
 
-import {SysMenus} from 'src/modules/sys_menus/sys_menus.model';
+import { SysMenus } from 'src/modules/sys_menus/sys_menus.model';
 
 import { SysModulesModule } from 'src/modules/sys_modules/sys_modules.module';
 
-import {SysModules} from 'src/modules/sys_modules/sys_modules.model';
+import { SysModules } from 'src/modules/sys_modules/sys_modules.model';
 
 import { RoleAuthTestModule } from 'src/modules/role_auth_test/role_auth_test.module';
 
-import {RoleAuthTest} from 'src/modules/role_auth_test/role_auth_test.model';
+import { RoleAuthTest } from 'src/modules/role_auth_test/role_auth_test.model';
 
 import { RoleTestModule } from 'src/modules/role_test/role_test.module';
 
@@ -76,7 +73,7 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [Rashed,SysUserModule,SysRoleMenu,SysMenus,SysModules,RoleAuthTest,
+      models: [SysUserModule,SysRoleMenu,SysMenus,SysModules,RoleAuthTest,
         RoleTest,
         SysRoleTable,
         SysUsers,
@@ -86,7 +83,7 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       ],
     }),
     AuthModule,
-    CreateTableModule,RashedModule,SysUserModuleModule,SysRoleMenuModule,SysMenusModule,SysModulesModule,RoleAuthTestModule,
+    CreateTableModule,SysUserModuleModule,SysRoleMenuModule,SysMenusModule,SysModulesModule,RoleAuthTestModule,
     RoleTestModule,
     SysRoleTableModule,
     SysUsersModule,

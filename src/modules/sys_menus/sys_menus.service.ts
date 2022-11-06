@@ -89,7 +89,8 @@ export class SysMenusService {
         'sys_menus',
       );
       //const menus = response;
-      console.log(data.rows[0].parent_menu);
+
+      console.log(data.rows.forEach((d) => d.get({ plain: true })));
       return response;
     } catch (err) {
       throw err;
