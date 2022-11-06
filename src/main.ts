@@ -10,7 +10,7 @@ import { ResponseInterceptor } from './response.interceptor';
 import { CustomeExceptionsFilter } from './custome-exceptions.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new CustomeExceptionsFilter());
   const port = process.env.APP_PORT;

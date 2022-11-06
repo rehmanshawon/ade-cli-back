@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+import {Rashed} from 'src/modules/rashed/rashed.model';
+
 import {
   BadRequestException,
   ForbiddenException,
@@ -77,7 +79,7 @@ export class RoleTestService {
       if (!canRead) throw new UnauthorizedException();
       const data = await this.role_test.findAndCountAll({
         order: [['id', 'DESC']],
-        include: [],
+        include: [{model:Rashed},],
         where: condition,
         limit,
         offset,
@@ -113,7 +115,7 @@ export class RoleTestService {
           id,
           is_active: 1,
         },
-        include: [],
+        include: [{model:Rashed},],
       });
       return response;
     } catch (err) {

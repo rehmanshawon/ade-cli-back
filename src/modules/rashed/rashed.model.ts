@@ -1,16 +1,15 @@
 /* eslint-disable prettier/prettier */
-import { Rashed } from 'src/modules/rashed/rashed.model';
-
 import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo, HasMany, HasOne, BelongsToMany } from 'sequelize-typescript';
+import { RoleTest } from 'src/modules/role_test/role_test.model';
 
-	@Table({tableName: 'role_test',timestamps: false,comment: ""})
-	export class RoleTest extends Model {
+	@Table({tableName: 'rashed',timestamps: false,comment: ""})
+	export class Rashed extends Model {
 	@Column({primaryKey: true, autoIncrement: true,type: DataType.INTEGER})
 	@Index({name: "PRIMARY", using: "BTREE", order: "ASC", unique: true})
 	id?: number;
 
 	@Column({type: DataType.STRING, unique: true})
-	test_field!: string;
+	rashed_name!: string;
 
     	@Column({type: DataType.BOOLEAN})
 	is_active!: boolean;
@@ -30,8 +29,13 @@ import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo
 	@Column({type: DataType.DATE})
 	deleted_at?: Date;
 
+	@ForeignKey(() => RoleTest)
+	@Column({                                  
+	type: DataType.INTEGER
+	})
+	role_test_id?: number;
 
-	@HasMany(() => Rashed)
-	rashed?: Rashed[];
+	@BelongsTo(() => RoleTest)
+	RoleTest?: RoleTest;
 
     }

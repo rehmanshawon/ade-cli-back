@@ -1,4 +1,8 @@
 /* eslint-disable prettier/prettier */
+import { RashedModule } from 'src/modules/rashed/rashed.module';
+
+import {Rashed} from 'src/modules/rashed/rashed.model';
+
 import { SysUserModuleModule } from 'src/modules/sys_user_module/sys_user_module.module';
 
 import {SysUserModule} from 'src/modules/sys_user_module/sys_user_module.model';
@@ -72,7 +76,7 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [SysUserModule,SysRoleMenu,SysMenus,SysModules,RoleAuthTest,
+      models: [Rashed,SysUserModule,SysRoleMenu,SysMenus,SysModules,RoleAuthTest,
         RoleTest,
         SysRoleTable,
         SysUsers,
@@ -82,7 +86,7 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       ],
     }),
     AuthModule,
-    CreateTableModule,SysUserModuleModule,SysRoleMenuModule,SysMenusModule,SysModulesModule,RoleAuthTestModule,
+    CreateTableModule,RashedModule,SysUserModuleModule,SysRoleMenuModule,SysMenusModule,SysModulesModule,RoleAuthTestModule,
     RoleTestModule,
     SysRoleTableModule,
     SysUsersModule,
