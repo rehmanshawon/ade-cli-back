@@ -316,13 +316,15 @@ export class Update${modelName}Dto extends PartialType(Create${modelName}Dto) {}
 
     //now lets write the crud service file on the model
     let serviceFileData = `/* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ForbiddenException,UnauthorizedException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
 import { ${modelName} } from './${tableName}.model';
 import { Create${modelName}Dto } from './dto/create-${tableName}.dto';
 import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
+import { SysTables } from '../sys_tables/sys_tables.model';
+import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
 `;
     for (let i = 0; i < association.length; i++) {
       const impModelString = `import { ${
@@ -339,35 +341,36 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
         constructor(
           @InjectModel(${modelName})
           private ${tableName}: typeof ${modelName},
+          @InjectModel(SysRoleTable) 
+          private role_table: typeof SysRoleTable,
+          @InjectModel(SysTables) 
+          private sysTables: typeof SysTables,
           private helpers: HelpersService,
         ) {}
        async create(create${modelName}Dto: Create${modelName}Dto, payload: any) {
         try {
+          const thisTableInfo = await this.sysTables.findOne({where: { table_name: '${tableName}' }});
+          if (!thisTableInfo) throw new ForbiddenException();
+          const canCreate = await this.role_table.findOne({
+            where: {
+              role_id: payload.role,
+              table_id: thisTableInfo.id,
+              access_type: 'All' || 'Create',
+            },
+          });
+          if (!canCreate) throw new UnauthorizedException();
           const response =  await this.${tableName}.create({
             ...create${modelName}Dto,
             created_at: sequelize.fn('NOW'),
             created_by: payload.sub,
           });
-          return {
-        error: false,
-        statusCode: 201,
-        message: 'record created successfully!',
-        data: response,
-      };
+          return response;
         }catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw err;
     }
   }
 
-    async findAll(page: number, size: number, field: string, search: string) {
+    async findAll(page: number, size: number, field: string, search: string,payload: any) {
       const condition = field
         ? { [field]: { [sequelize.Op.like]:` +
       '`%${search}%`' +
@@ -375,6 +378,18 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
         : {is_active: 1};
       const { limit, offset } = this.helpers.getPagination(page, size);
       try {
+        const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: '${tableName}' },
+      });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canRead = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Read',
+        },
+      });
+      if (!canRead) throw new UnauthorizedException();
       const data = await this.${tableName}.findAndCountAll({        
         order: [['id', 'DESC']],
         include: [${arrayOfIncludes}],
@@ -383,27 +398,26 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
         offset,
       });
       const response = this.helpers.getPagingData(data, page, limit,'${tableName}');
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Success!',
-        data: response,
-      };
+      return response;
     }catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw err;
     }
   }
 
-    async findOne(id: number) {
+    async findOne(id: number, payload: any) {
        try {
+        const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: '${tableName}' },
+      });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canRead = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Read',
+        },
+      });
+      if (!canRead) throw new UnauthorizedException();
           const response = await this.${tableName}.findOne({
             where: {
               id,
@@ -411,27 +425,26 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
             },
             include: [${arrayOfIncludes}],
           });
-          return {
-        error: false,
-        statusCode: 200,
-        message: 'Success!',
-        data: response,
-      };
+          return response;
       } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw err;
     }
     }
 
   async update(id: number, update${modelName}Dto: Update${modelName}Dto,payload: any) {
     try {
+      const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: '${tableName}' },
+      });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canUpdate = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Update',
+        },
+      });
+      if (!canUpdate) throw new UnauthorizedException();
         const response = await this.${tableName}.update(
           { 
             ...update${modelName}Dto,
@@ -441,27 +454,26 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
           { where: { id }, returning: true },
         );
 
-    return {
-        error: false,
-        statusCode: 200,
-        message: 'Update success!',
-        data: response,
-      };
+    return response;
     }catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw err;
     }
   }
 
-  async remove(id: number) {
+  async remove(id: number, payload: any) {
       try {
+        const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: '${tableName}' },
+      });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canDelete = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Delete',
+        },
+      });
+      if (!canDelete) throw new UnauthorizedException();
           const response = await this.${tableName}.update(
             {
                 is_active: 0,
@@ -469,22 +481,9 @@ import { Update${modelName}Dto } from './dto/update-${tableName}.dto';
               },
               { where: { id } },
             );
-            return {
-          error: false,
-          statusCode: 200,
-          message: 'Delete success!',
-          data: response,
-        };
+            return response;
       }catch (err) {
-        throw new HttpException(
-          {
-            error: true,
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: err.errors[0].message,
-            data: [],
-          },
-          HttpStatus.BAD_REQUEST,
-        );
+        throw err;
       }
     }
   }
@@ -545,15 +544,15 @@ export class ${modelName}Controller {
 
       return await this.${await this.helpers.uncapitalizeFirstLetter(
         modelName,
-      )}Service.findAll(page, size, field, search);
+      )}Service.findAll(page, size, field, search,req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get(':id')
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id') id: string, @Request() req) {
       return this.${await this.helpers.uncapitalizeFirstLetter(
         modelName,
-      )}Service.findOne(+id);
+      )}Service.findOne(+id, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -570,10 +569,10 @@ export class ${modelName}Controller {
 
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
-    remove(@Param('id') id: string) {
+    remove(@Param('id') id: string, @Request() req) {
       return this.${await this.helpers.uncapitalizeFirstLetter(
         modelName,
-      )}Service.remove(+id);
+      )}Service.remove(+id, req.user);
     }
 
   }
@@ -590,9 +589,11 @@ import { HelpersModule } from 'src/helpers/helpers/helpers.module';
 import { ${modelName}Controller } from './${tableName}.controller';
 import { ${modelName}Service } from './${tableName}.service';
 import { ${modelName} } from './${tableName}.model';
+import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
+import { SysTables } from '../sys_tables/sys_tables.model';
 
 @Module({
-  imports: [SequelizeModule.forFeature([${modelName}]), HelpersModule],
+  imports: [SequelizeModule.forFeature([${modelName}, SysRoleTable, SysTables]), HelpersModule],
   providers: [${modelName}Service],
   controllers: [${modelName}Controller],
 })

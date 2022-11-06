@@ -1,23 +1,29 @@
 /* eslint-disable prettier/prettier */
-import { SysUserModule } from 'src/modules/sys_user_module/sys_user_module.model';
+import { SysRoleMenu } from 'src/modules/sys_role_menu/sys_role_menu.model';
 
 import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo, HasMany, HasOne, BelongsToMany } from 'sequelize-typescript';
-import { SysRoles } from 'src/modules/sys_roles/sys_roles.model';
+import { SysModules } from 'src/modules/sys_modules/sys_modules.model';
 
-	@Table({tableName: 'sys_users',timestamps: false,comment: ""})
-	export class SysUsers extends Model {
+	@Table({tableName: 'sys_menus',timestamps: false,comment: ""})
+	export class SysMenus extends Model {
 	@Column({primaryKey: true, autoIncrement: true,type: DataType.INTEGER})
 	@Index({name: "PRIMARY", using: "BTREE", order: "ASC", unique: true})
 	id?: number;
 
-	@Column({type: DataType.STRING, unique: false})
-	user_name!: string;
-
 	@Column({type: DataType.STRING, unique: true})
-	email!: string;
+	menu_name!: string;
 
 	@Column({type: DataType.STRING, unique: false})
-	password!: string;
+	menu_url!: string;
+
+	@Column({type: DataType.STRING, unique: false})
+	menu_icon_url!: string;
+
+	@Column({type: DataType.INTEGER, unique: false})
+	menu_order!: number;
+
+	@Column({type: DataType.INTEGER, unique: false})
+	parent_menu!: number;
 
     	@Column({type: DataType.BOOLEAN})
 	is_active!: boolean;
@@ -37,17 +43,17 @@ import { SysRoles } from 'src/modules/sys_roles/sys_roles.model';
 	@Column({type: DataType.DATE})
 	deleted_at?: Date;
 
-	@ForeignKey(() => SysRoles)
+	@ForeignKey(() => SysModules)
 	@Column({                                  
 	type: DataType.INTEGER
 	})
-	role_id?: number;
+	module_id?: number;
 
-	@BelongsTo(() => SysRoles)
-	SysRole?: SysRoles;
+	@BelongsTo(() => SysModules)
+	SysModule?: SysModules;
 
 
-	@HasMany(() => SysUserModule)
-	sys_user_module?: SysUserModule[];
+	@HasMany(() => SysRoleMenu)
+	sys_role_menu?: SysRoleMenu[];
 
     }

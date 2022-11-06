@@ -1,39 +1,32 @@
 /* eslint-disable prettier/prettier */
-import { SysRoleMenu } from 'src/modules/sys_role_menu/sys_role_menu.model';
-
-import { SysRoleTable } from 'src/modules/sys_role_table/sys_role_table.model';
-
-import { SysUsers } from 'src/modules/sys_users/sys_users.model';
-
 import {
   ForbiddenException,
   UnauthorizedException,
-  HttpException,
-  HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
-import { SysRoles } from './sys_roles.model';
-import { CreateSysRolesDto } from './dto/create-sys_roles.dto';
-import { UpdateSysRolesDto } from './dto/update-sys_roles.dto';
+import { RoleAuthTest } from './role_auth_test.model';
+import { CreateRoleAuthTestDto } from './dto/create-role_auth_test.dto';
+import { UpdateRoleAuthTestDto } from './dto/update-role_auth_test.dto';
 import { SysTables } from '../sys_tables/sys_tables.model';
+import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
 @Injectable()
-export class SysRolesService {
+export class RoleAuthTestService {
   constructor(
-    @InjectModel(SysRoles)
-    private sys_roles: typeof SysRoles,
+    @InjectModel(RoleAuthTest)
+    private role_auth_test: typeof RoleAuthTest,
     @InjectModel(SysRoleTable)
     private role_table: typeof SysRoleTable,
     @InjectModel(SysTables)
     private sysTables: typeof SysTables,
     private helpers: HelpersService,
   ) {}
-  async create(createSysRolesDto: CreateSysRolesDto, payload: any) {
+  async create(createRoleAuthTestDto: CreateRoleAuthTestDto, payload: any) {
     try {
       const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_roles' },
+        where: { table_name: 'role_auth_test' },
       });
       if (!thisTableInfo) throw new ForbiddenException();
       const canCreate = await this.role_table.findOne({
@@ -44,8 +37,8 @@ export class SysRolesService {
         },
       });
       if (!canCreate) throw new UnauthorizedException();
-      const response = await this.sys_roles.create({
-        ...createSysRolesDto,
+      const response = await this.role_auth_test.create({
+        ...createRoleAuthTestDto,
         created_at: sequelize.fn('NOW'),
         created_by: payload.sub,
       });
@@ -68,7 +61,7 @@ export class SysRolesService {
     const { limit, offset } = this.helpers.getPagination(page, size);
     try {
       const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_roles' },
+        where: { table_name: 'role_auth_test' },
       });
       if (!thisTableInfo) throw new ForbiddenException();
       const canRead = await this.role_table.findOne({
@@ -79,13 +72,9 @@ export class SysRolesService {
         },
       });
       if (!canRead) throw new UnauthorizedException();
-      const data = await this.sys_roles.findAndCountAll({
+      const data = await this.role_auth_test.findAndCountAll({
         order: [['id', 'DESC']],
-        include: [
-          { model: SysRoleMenu },
-          { model: SysRoleTable },
-          { model: SysUsers, attributes: { exclude: ['password'] } },
-        ],
+        include: [],
         where: condition,
         limit,
         offset,
@@ -94,7 +83,7 @@ export class SysRolesService {
         data,
         page,
         limit,
-        'sys_roles',
+        'role_auth_test',
       );
       return response;
     } catch (err) {
@@ -105,7 +94,7 @@ export class SysRolesService {
   async findOne(id: number, payload: any) {
     try {
       const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_roles' },
+        where: { table_name: 'role_auth_test' },
       });
       if (!thisTableInfo) throw new ForbiddenException();
       const canRead = await this.role_table.findOne({
@@ -116,16 +105,12 @@ export class SysRolesService {
         },
       });
       if (!canRead) throw new UnauthorizedException();
-      const response = await this.sys_roles.findOne({
+      const response = await this.role_auth_test.findOne({
         where: {
           id,
           is_active: 1,
         },
-        include: [
-          { model: SysRoleMenu },
-          { model: SysRoleTable },
-          { model: SysUsers, attributes: { exclude: ['password'] } },
-        ],
+        include: [],
       });
       return response;
     } catch (err) {
@@ -133,61 +118,63 @@ export class SysRolesService {
     }
   }
 
-  async update(id: number, updateSysRolesDto: UpdateSysRolesDto, payload: any) {
+  async update(
+    id: number,
+    updateRoleAuthTestDto: UpdateRoleAuthTestDto,
+    payload: any,
+  ) {
     try {
-      const response = await this.sys_roles.update(
+      const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: 'role_auth_test' },
+      });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canUpdate = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Update',
+        },
+      });
+      if (!canUpdate) throw new UnauthorizedException();
+      const response = await this.role_auth_test.update(
         {
-          ...updateSysRolesDto,
+          ...updateRoleAuthTestDto,
           updated_at: sequelize.fn('NOW'),
           updated_by: payload.sub,
         },
         { where: { id }, returning: true },
       );
 
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Update success!',
-        data: response,
-      };
+      return response;
     } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw err;
     }
   }
 
   async remove(id: number, payload: any) {
     try {
-      const response = await this.sys_roles.update(
+      const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: 'role_auth_test' },
+      });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canDelete = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Delete',
+        },
+      });
+      if (!canDelete) throw new UnauthorizedException();
+      const response = await this.role_auth_test.update(
         {
           is_active: 0,
           deleted_at: sequelize.fn('NOW'),
         },
         { where: { id } },
       );
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Delete success!',
-        data: response,
-      };
+      return response;
     } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw err;
     }
   }
 }

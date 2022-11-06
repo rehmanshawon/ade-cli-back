@@ -1,23 +1,16 @@
 /* eslint-disable prettier/prettier */
-import { SysUserModule } from 'src/modules/sys_user_module/sys_user_module.model';
-
 import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo, HasMany, HasOne, BelongsToMany } from 'sequelize-typescript';
 import { SysRoles } from 'src/modules/sys_roles/sys_roles.model';
+import { SysMenus } from 'src/modules/sys_menus/sys_menus.model';
 
-	@Table({tableName: 'sys_users',timestamps: false,comment: ""})
-	export class SysUsers extends Model {
+	@Table({tableName: 'sys_role_menu',timestamps: false,comment: ""})
+	export class SysRoleMenu extends Model {
 	@Column({primaryKey: true, autoIncrement: true,type: DataType.INTEGER})
 	@Index({name: "PRIMARY", using: "BTREE", order: "ASC", unique: true})
 	id?: number;
 
-	@Column({type: DataType.STRING, unique: false})
-	user_name!: string;
-
-	@Column({type: DataType.STRING, unique: true})
-	email!: string;
-
-	@Column({type: DataType.STRING, unique: false})
-	password!: string;
+	@Column({type: DataType.BOOLEAN, unique: false})
+	accessible!: boolean;
 
     	@Column({type: DataType.BOOLEAN})
 	is_active!: boolean;
@@ -43,11 +36,16 @@ import { SysRoles } from 'src/modules/sys_roles/sys_roles.model';
 	})
 	role_id?: number;
 
+	@ForeignKey(() => SysMenus)
+	@Column({                                  
+	type: DataType.INTEGER
+	})
+	menu_id?: number;
+
 	@BelongsTo(() => SysRoles)
 	SysRole?: SysRoles;
 
-
-	@HasMany(() => SysUserModule)
-	sys_user_module?: SysUserModule[];
+	@BelongsTo(() => SysMenus)
+	SysMenu?: SysMenus;
 
     }

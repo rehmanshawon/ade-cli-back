@@ -1,23 +1,16 @@
 /* eslint-disable prettier/prettier */
-import { SysUserModule } from 'src/modules/sys_user_module/sys_user_module.model';
-
 import { Model, Table, Column, DataType, Index, Sequelize, ForeignKey, BelongsTo, HasMany, HasOne, BelongsToMany } from 'sequelize-typescript';
-import { SysRoles } from 'src/modules/sys_roles/sys_roles.model';
+import { SysUsers } from 'src/modules/sys_users/sys_users.model';
+import { SysModules } from 'src/modules/sys_modules/sys_modules.model';
 
-	@Table({tableName: 'sys_users',timestamps: false,comment: ""})
-	export class SysUsers extends Model {
+	@Table({tableName: 'sys_user_module',timestamps: false,comment: ""})
+	export class SysUserModule extends Model {
 	@Column({primaryKey: true, autoIncrement: true,type: DataType.INTEGER})
 	@Index({name: "PRIMARY", using: "BTREE", order: "ASC", unique: true})
 	id?: number;
 
-	@Column({type: DataType.STRING, unique: false})
-	user_name!: string;
-
-	@Column({type: DataType.STRING, unique: true})
-	email!: string;
-
-	@Column({type: DataType.STRING, unique: false})
-	password!: string;
+	@Column({type: DataType.BOOLEAN, unique: false})
+	accessible!: boolean;
 
     	@Column({type: DataType.BOOLEAN})
 	is_active!: boolean;
@@ -37,17 +30,22 @@ import { SysRoles } from 'src/modules/sys_roles/sys_roles.model';
 	@Column({type: DataType.DATE})
 	deleted_at?: Date;
 
-	@ForeignKey(() => SysRoles)
+	@ForeignKey(() => SysUsers)
 	@Column({                                  
 	type: DataType.INTEGER
 	})
-	role_id?: number;
+	user_id?: number;
 
-	@BelongsTo(() => SysRoles)
-	SysRole?: SysRoles;
+	@ForeignKey(() => SysModules)
+	@Column({                                  
+	type: DataType.INTEGER
+	})
+	module_id?: number;
 
+	@BelongsTo(() => SysUsers)
+	SysUser?: SysUsers;
 
-	@HasMany(() => SysUserModule)
-	sys_user_module?: SysUserModule[];
+	@BelongsTo(() => SysModules)
+	SysModule?: SysModules;
 
     }

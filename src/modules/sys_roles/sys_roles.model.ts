@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+import { SysRoleMenu } from 'src/modules/sys_role_menu/sys_role_menu.model';
+
 import { SysRoleTable } from 'src/modules/sys_role_table/sys_role_table.model';
 
 import { SysUsers } from 'src/modules/sys_users/sys_users.model';
@@ -49,5 +51,9 @@ export class SysRoles extends Model {
 
 	@HasMany(() => SysRoleTable)
 	sys_role_table?: SysRoleTable[];
+
+
+	@HasMany(() => SysRoleMenu)
+	sys_role_menu?: SysRoleMenu[];
 
 }
