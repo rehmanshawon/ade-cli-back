@@ -1,4 +1,12 @@
 /* eslint-disable prettier/prettier */
+import { ShoesModule } from 'src/modules/shoes/shoes.module';
+
+import {Shoes} from 'src/modules/shoes/shoes.model';
+
+import { MotiureModule } from 'src/modules/motiure/motiure.module';
+
+import {Motiure} from 'src/modules/motiure/motiure.model';
+
 
 import { SysUserModuleModule } from 'src/modules/sys_user_module/sys_user_module.module';
 
@@ -73,7 +81,7 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [SysUserModule,SysRoleMenu,SysMenus,SysModules,RoleAuthTest,
+      models: [Shoes,Motiure,SysUserModule,SysRoleMenu,SysMenus,SysModules,RoleAuthTest,
         RoleTest,
         SysRoleTable,
         SysUsers,
@@ -83,7 +91,7 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       ],
     }),
     AuthModule,
-    CreateTableModule,SysUserModuleModule,SysRoleMenuModule,SysMenusModule,SysModulesModule,RoleAuthTestModule,
+    CreateTableModule,ShoesModule,MotiureModule,SysUserModuleModule,SysRoleMenuModule,SysMenusModule,SysModulesModule,RoleAuthTestModule,
     RoleTestModule,
     SysRoleTableModule,
     SysUsersModule,

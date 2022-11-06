@@ -82,18 +82,22 @@ export class SysMenusService {
         limit,
         offset,
       });
-      const menus = [];
-      for (let i = 0; i < data.rows.length; i++) {
-        const children = [];
-        for (let j = 0; j < data.rows.length; j++) {
-          if (data.rows[i].id === data.rows[j].parent_menu)
-            children.push(data.rows[j].get());
-        }
-        const menu = data.rows[i].get();
-        menu['children'] = children;
-        menus.push(menu);
-      }
-      data['rows'] = menus;
+      const temp = data.rows.map((m) => m.get({ plain: true }));
+      const result = this.treeData(temp);
+      // const menus = [];
+      // for (let i = 0; i < data.rows.length; i++) {
+      //   const children = [];
+      //   for (let j = 0; j < data.rows.length; j++) {
+      //     if (data.rows[i].id === data.rows[j].parent_menu)
+      //       children.push(data.rows[j].get());
+      //   }
+      //   const menu = data.rows[i].get();
+      //   menu['children'] = children;
+      //   if (children) menus.push(menu);
+      // }
+      // data['rows'] = menus;
+      data['rows'] = result;
+
       const response = this.helpers.getPagingData(
         data,
         page,
@@ -189,4 +193,13 @@ export class SysMenusService {
       throw err;
     }
   }
+
+  treeData = (items: any[], id = 0, link = 'parent_menu') =>
+    items
+      .filter((item) => item[link] == id)
+      .map((item) => ({
+        ...item,
+        id: +item.id,
+        children: this.treeData(items, item.id),
+      }));
 }
