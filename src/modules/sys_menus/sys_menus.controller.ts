@@ -53,6 +53,7 @@ export class SysMenusController {
     @Param('pid') pid: string,
     @Request() req,
   ) {
+    console.log(mid, pid, '***');
     return this.sysMenusService.findByModuleAndParentId(+mid, +pid, req.user);
   }
 
