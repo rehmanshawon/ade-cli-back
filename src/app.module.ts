@@ -1,12 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { ShoesModule } from 'src/modules/shoes/shoes.module';
-
-import {Shoes} from 'src/modules/shoes/shoes.model';
-
-import { MotiureModule } from 'src/modules/motiure/motiure.module';
-
-import {Motiure} from 'src/modules/motiure/motiure.model';
-
 
 import { SysUserModuleModule } from 'src/modules/sys_user_module/sys_user_module.module';
 
@@ -23,14 +15,6 @@ import { SysMenus } from 'src/modules/sys_menus/sys_menus.model';
 import { SysModulesModule } from 'src/modules/sys_modules/sys_modules.module';
 
 import { SysModules } from 'src/modules/sys_modules/sys_modules.model';
-
-import { RoleAuthTestModule } from 'src/modules/role_auth_test/role_auth_test.module';
-
-import { RoleAuthTest } from 'src/modules/role_auth_test/role_auth_test.model';
-
-import { RoleTestModule } from 'src/modules/role_test/role_test.module';
-
-import { RoleTest } from 'src/modules/role_test/role_test.model';
 
 import { SysRoleTableModule } from 'src/modules/sys_role_table/sys_role_table.module';
 
@@ -81,8 +65,11 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [Shoes,Motiure,SysUserModule,SysRoleMenu,SysMenus,SysModules,RoleAuthTest,
-        RoleTest,
+      models: [
+        SysUserModule,
+        SysRoleMenu,
+        SysMenus,
+        SysModules,
         SysRoleTable,
         SysUsers,
         SysRoles,
@@ -91,8 +78,11 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       ],
     }),
     AuthModule,
-    CreateTableModule,ShoesModule,MotiureModule,SysUserModuleModule,SysRoleMenuModule,SysMenusModule,SysModulesModule,RoleAuthTestModule,
-    RoleTestModule,
+    CreateTableModule,
+    SysUserModuleModule,
+    SysRoleMenuModule,
+    SysMenusModule,
+    SysModulesModule,
     SysRoleTableModule,
     SysUsersModule,
     SysRolesModule,
