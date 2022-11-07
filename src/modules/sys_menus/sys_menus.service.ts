@@ -138,6 +138,34 @@ export class SysMenusService {
     }
   }
 
+  async findByModuleAndParentId(mid: number, pid: number, payload: any) {
+    try {
+      const thisTableInfo = await this.sysTables.findOne({
+        where: { table_name: 'sys_menus' },
+      });
+      if (!thisTableInfo) throw new ForbiddenException();
+      const canRead = await this.role_table.findOne({
+        where: {
+          role_id: payload.role,
+          table_id: thisTableInfo.id,
+          access_type: 'All' || 'Read',
+        },
+      });
+      if (!canRead) throw new UnauthorizedException();
+      const response = await this.sys_menus.findAll({
+        where: {
+          module_id: mid,
+          parent_menu: pid,
+          is_active: 1,
+        },
+        include: [{ model: SysRoleMenu }, { model: SysModules }],
+      });
+      return response;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async update(id: number, updateSysMenusDto: UpdateSysMenusDto, payload: any) {
     try {
       const thisTableInfo = await this.sysTables.findOne({

@@ -7,6 +7,7 @@ import {
   UseGuards,
   Body,
   Res,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/modules/sys-auth/jwt-auth.guard';
@@ -19,6 +20,10 @@ export class CreateTableController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createTable(@Body() table: CreateTableDto, @Request() req) {
+    const { name, email, sub, role } = req.user;
+    if (role !== 1) {
+      throw new ForbiddenException();
+    }
     await this.createTableService.createTable(table, req.user);
 
     const association = await this.createTableService.createModel(table);
