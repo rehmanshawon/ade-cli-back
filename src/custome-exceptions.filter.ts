@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   ExceptionFilter,
   Catch,
@@ -78,6 +79,7 @@ export class CustomeExceptionsFilter implements ExceptionFilter {
       status: statusCode,
       success: false,
       message,
+      data: [],
     };
     this.logger.error(
       `Request Method : ${request.method} | Request Path : ${

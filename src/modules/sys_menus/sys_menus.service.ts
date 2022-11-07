@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   UnauthorizedException,
   Injectable,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
@@ -27,28 +28,29 @@ export class SysMenusService {
     private helpers: HelpersService,
   ) {}
   async create(createSysMenusDto: CreateSysMenusDto, payload: any) {
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_menus' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canCreate = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Create',
-        },
-      });
-      if (!canCreate) throw new UnauthorizedException();
-      const response = await this.sys_menus.create({
-        ...createSysMenusDto,
-        created_at: sequelize.fn('NOW'),
-        created_by: payload.sub,
-      });
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    //throw new BadRequestException('this is for test');
+    // try {
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_menus' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canCreate = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Create',
+      },
+    });
+    if (!canCreate) throw new UnauthorizedException();
+    const response = await this.sys_menus.create({
+      ...createSysMenusDto,
+      created_at: sequelize.fn('NOW'),
+      created_by: payload.sub,
+    });
+    return response;
+    // } catch (err) {
+    //   throw err;
+    // }
   }
 
   async findAll(
