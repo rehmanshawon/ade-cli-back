@@ -83,7 +83,7 @@ export class SysMenusService {
         offset,
       });
       const temp = data.rows.map((m) => m.get({ plain: true }));
-      const result = this.treeData(temp);
+      const result = this.helpers.treeData(temp);
       // const menus = [];
       // for (let i = 0; i < data.rows.length; i++) {
       //   const children = [];
@@ -193,13 +193,4 @@ export class SysMenusService {
       throw err;
     }
   }
-
-  treeData = (items: any[], id = 0, link = 'parent_menu') =>
-    items
-      .filter((item) => item[link] == id)
-      .map((item) => ({
-        ...item,
-        id: +item.id,
-        children: this.treeData(items, item.id),
-      }));
 }

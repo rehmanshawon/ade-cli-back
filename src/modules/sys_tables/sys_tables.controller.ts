@@ -31,13 +31,19 @@ export class SysTablesController {
   async findAll(@Request() req) {
     const { page, size, field, search } = req.query;
 
-    return await this.sysTablesService.findAll(page, size, field, search);
+    return await this.sysTablesService.findAll(
+      page,
+      size,
+      field,
+      search,
+      req.user,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.sysTablesService.findOne(+id);
+  findOne(@Param('id') id: string, @Request() req) {
+    return this.sysTablesService.findOne(+id, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -52,7 +58,7 @@ export class SysTablesController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.sysTablesService.remove(+id);
+  remove(@Param('id') id: string, @Request() req) {
+    return this.sysTablesService.remove(+id, req.user);
   }
 }

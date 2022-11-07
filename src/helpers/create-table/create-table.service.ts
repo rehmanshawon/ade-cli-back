@@ -32,12 +32,14 @@ import { HelpersService } from '../helpers/helpers.service';
 import { InjectModel } from '@nestjs/sequelize';
 import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
 import { SysAttributes } from 'src/modules/sys_attributes/sys_attributes.model';
-import { response } from 'express';
+import { SysRoleTable } from 'src/modules/sys_role_table/sys_role_table.model';
+
 @Injectable()
 export class CreateTableService {
   constructor(
     @InjectModel(SysTables) private sysTables: typeof SysTables,
     @InjectModel(SysAttributes) private sysAttributes: typeof SysAttributes,
+    @InjectModel(SysRoleTable) private sysRoleTable: typeof SysRoleTable,
     private helpers: HelpersService,
   ) {}
 
@@ -210,22 +212,16 @@ export class CreateTableService {
           created_by: payload.sub,
         });
       }
-      return {
-        error: false,
-        statusCode: 201,
-        message: 'record created successfully!',
-        data: response,
-      };
+      await this.sysRoleTable.create({
+        role_id: payload.role,
+        table_id: response.id,
+        access_type: 'All',
+        created_at: sequelize.fn('NOW'),
+        created_by: payload.sub,
+      });
+      return response;
     } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw err;
     }
   }
 

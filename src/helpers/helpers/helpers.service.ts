@@ -145,4 +145,13 @@ export class HelpersService {
         .join('_')
     );
   }
+
+  treeData = (items: any[], id = 0, link = 'parent_menu') =>
+    items
+      .filter((item) => item[link] == id)
+      .map((item) => ({
+        ...item,
+        id: +item.id,
+        children: this.treeData(items, item.id),
+      }));
 }

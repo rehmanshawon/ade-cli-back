@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
-import {SysRoleTable} from 'src/modules/sys_role_table/sys_role_table.model';
-
+import { SysRoleTable } from 'src/modules/sys_role_table/sys_role_table.model';
 
 import { SysAttributes } from 'src/modules/sys_attributes/sys_attributes.model';
 
@@ -44,7 +43,13 @@ export class SysTablesService {
     }
   }
 
-  async findAll(page: number, size: number, field: string, search: string) {
+  async findAll(
+    page: number,
+    size: number,
+    field: string,
+    search: string,
+    payload: any,
+  ) {
     const condition = field
       ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
       : { is_active: 1 };
@@ -52,7 +57,7 @@ export class SysTablesService {
     try {
       const data = await this.sys_tables.findAndCountAll({
         order: [['id', 'DESC']],
-        include: [{model:SysRoleTable},{ model: SysAttributes }],
+        include: [{ model: SysRoleTable }, { model: SysAttributes }],
         where: condition,
         limit,
         offset,
@@ -63,33 +68,20 @@ export class SysTablesService {
         limit,
         'sys_tables',
       );
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Success!',
-        data: response,
-      };
+      return response;
     } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+      throw err;
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, payload: any) {
     try {
       const response = await this.sys_tables.findOne({
         where: {
           id,
           is_active: 1,
         },
-        include: [{model:SysRoleTable},{ model: SysAttributes }],
+        include: [{ model: SysRoleTable }, { model: SysAttributes }],
       });
       return {
         error: false,
@@ -144,7 +136,7 @@ export class SysTablesService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: number, payload: any) {
     try {
       const response = await this.sys_tables.update(
         {
