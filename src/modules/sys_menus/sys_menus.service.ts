@@ -146,12 +146,22 @@ export class SysMenusService {
         "You don't have read access to this table!",
       );
     const data = await this.sys_menus.findAndCountAll({
+      attributes: {
+        exclude: [
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },
       where: {
         module_id: mid,
         parent_menu: pid,
         is_active: 1,
       },
-      include: [{ model: SysRoleMenu }, { model: SysModules }],
+      //include: [{ model: SysRoleMenu }, { model: SysModules }],
     });
     const { limit, offset } = this.helpers.getPagination(0, 1000);
     const response = this.helpers.getPagingData(
