@@ -79,7 +79,17 @@ export class SysMenusService {
       if (!canRead) throw new UnauthorizedException();
       const data = await this.sys_menus.findAndCountAll({
         order: [['id', 'ASC']],
-        include: [{ model: SysRoleMenu }, { model: SysModules }],
+        // include: [{ model: SysRoleMenu }, { model: SysModules }],
+        attributes: {
+          exclude: [
+            'is_active',
+            'created_at',
+            'created_by',
+            'updated_at',
+            'updated_by',
+            'deleted_at',
+          ],
+        },
         where: condition,
         limit,
         offset,

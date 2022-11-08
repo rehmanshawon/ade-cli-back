@@ -1,4 +1,8 @@
 /* eslint-disable prettier/prettier */
+import { MusabbirModule } from 'src/modules/musabbir/musabbir.module';
+
+import {Musabbir} from 'src/modules/musabbir/musabbir.model';
+
 
 import { SysUserModuleModule } from 'src/modules/sys_user_module/sys_user_module.module';
 
@@ -65,7 +69,7 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [
+      models: [Musabbir,
         SysUserModule,
         SysRoleMenu,
         SysMenus,
@@ -78,7 +82,7 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       ],
     }),
     AuthModule,
-    CreateTableModule,
+    CreateTableModule,MusabbirModule,
     SysUserModuleModule,
     SysRoleMenuModule,
     SysMenusModule,

@@ -198,15 +198,27 @@ export class CreateTableService {
       });
       await this.sysAttributes.create({
         attribute_name: 'id',
+        attribute_type: 'number',
         primaryKey: true,
         sys_table_id: response.id,
         created_at: sequelize.fn('NOW'),
         created_by: payload.sub,
       });
       for (let i = 0; i < fieldList.length; i++) {
+        let foreign_table_id = null;
+        if (fieldList[i].foreignKey) {
+          const result = await this.sysTables.findOne({
+            where: { table_name: fieldList[i].reference.right_table },
+          });
+          if (result) {
+            foreign_table_id = result.id;
+          }
+        }
         await this.sysAttributes.create({
           attribute_name: fieldList[i].field,
-          primaryKey: false,
+          attribute_type: fieldList[i].type,
+          foreignKey: fieldList[i].foreignKey,
+          foreign_table_id: foreign_table_id,
           sys_table_id: response.id,
           created_at: sequelize.fn('NOW'),
           created_by: payload.sub,

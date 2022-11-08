@@ -10,17 +10,27 @@ import {
   IsDecimal,
   MaxLength,
   MinLength,
-} from 'class-validator'
-;
+} from 'class-validator';
 export class CreateSysAttributesDto {
-@IsString()
-attribute_name:string;
+  @IsString()
+  attribute_name: string;
 
-@IsBoolean()
-primaryKey:boolean;
+  @IsString()
+  attribute_type: string;
 
-@IsNumber()
-@IsOptional()
-sys_table_id:number;
+  @IsBoolean()
+  @IsOptional()
+  primaryKey: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  foreignKey: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  foreign_table_id: number;
+
+  @IsNumber()
+  @IsOptional()
+  sys_table_id: number;
 }

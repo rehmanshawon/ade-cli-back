@@ -2,42 +2,24 @@
 'use strict';
 module.exports = {
             async up (queryInterface, Sequelize) {
-                await queryInterface.createTable('sys_attributes', {
+                await queryInterface.createTable('musabbir', {
                     id: {                    
                     allowNull:false,
                     autoIncrement:true,             
                     primaryKey:true, 
                     type:Sequelize.INTEGER,                             
                 },
-					attribute_name:{
+					name:{
                     type:Sequelize.STRING,
                     allowNull:false,                                   
-                    unique:undefined,
+                    unique:true,
                                                     
                 },
-					primaryKey:{
-                    type:Sequelize.BOOLEAN,
+					age:{
+                    type:Sequelize.INTEGER,
                     allowNull:undefined,                                   
                     unique:undefined,
                                                     
-                },
-          foreignKey:{
-                    type:Sequelize.BOOLEAN,
-                    allowNull:undefined,                                   
-                    unique:undefined,
-                                                    
-                },
-          foreign_table_id:{
-                    type:Sequelize.INTEGER,
-                    allowNull:true,                                                    
-                },
-					sys_table_id:{
-                    type:Sequelize.INTEGER,
-                    allowNull:true,
-                    references: {
-                      model: 'sys_tables',
-                      key: 'id',
-                    },                                              
                 },
 					isActive: {
             field: 'is_active',
@@ -74,6 +56,6 @@ module.exports = {
             },
 
             async down (queryInterface, Sequelize) {
-                await queryInterface.dropTable('sys_attributes');
+                await queryInterface.dropTable('musabbir');
             }
         };

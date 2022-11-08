@@ -8,26 +8,27 @@ import { CreateSysAttributesDto } from './dto/create-sys_attributes.dto';
 import { UpdateSysAttributesDto } from './dto/update-sys_attributes.dto';
 import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
 @Injectable()
-      export class SysAttributesService {
-        constructor(
-          @InjectModel(SysAttributes)
-          private sys_attributes: typeof SysAttributes,
-          private helpers: HelpersService,
-        ) {}
-       async create(createSysAttributesDto: CreateSysAttributesDto, payload: any) {
-        try {
-          const response =  await this.sys_attributes.create({
-            ...createSysAttributesDto,
-            created_at: sequelize.fn('NOW'),
-            created_by: payload.sub,
-          });
-          return {
+export class SysAttributesService {
+  constructor(
+    @InjectModel(SysAttributes)
+    private sys_attributes: typeof SysAttributes,
+    @InjectModel(SysTables) private sys_tables: typeof SysTables,
+    private helpers: HelpersService,
+  ) {}
+  async create(createSysAttributesDto: CreateSysAttributesDto, payload: any) {
+    try {
+      const response = await this.sys_attributes.create({
+        ...createSysAttributesDto,
+        created_at: sequelize.fn('NOW'),
+        created_by: payload.sub,
+      });
+      return {
         error: false,
         statusCode: 201,
         message: 'record created successfully!',
         data: response,
       };
-        }catch (err) {
+    } catch (err) {
       throw new HttpException(
         {
           error: true,
@@ -40,27 +41,32 @@ import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
     }
   }
 
-    async findAll(page: number, size: number, field: string, search: string) {
-      const condition = field
-        ? { [field]: { [sequelize.Op.like]:`%${search}%` }, is_active: 1 }
-        : {is_active: 1};
-      const { limit, offset } = this.helpers.getPagination(page, size);
-      try {
-      const data = await this.sys_attributes.findAndCountAll({        
+  async findAll(page: number, size: number, field: string, search: string) {
+    const condition = field
+      ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
+      : { is_active: 1 };
+    const { limit, offset } = this.helpers.getPagination(page, size);
+    try {
+      const data = await this.sys_attributes.findAndCountAll({
         order: [['id', 'DESC']],
-        include: [{model:SysTables}],
+        include: [{ model: SysTables }],
         where: condition,
         limit,
         offset,
       });
-      const response = this.helpers.getPagingData(data, page, limit,'sys_attributes');
+      const response = this.helpers.getPagingData(
+        data,
+        page,
+        limit,
+        'sys_attributes',
+      );
       return {
         error: false,
         statusCode: 200,
         message: 'Success!',
         data: response,
       };
-    }catch (err) {
+    } catch (err) {
       throw new HttpException(
         {
           error: true,
@@ -73,22 +79,22 @@ import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
     }
   }
 
-    async findOne(id: number) {
-       try {
-          const response = await this.sys_attributes.findOne({
-            where: {
-              id,
-              is_active: 1,
-            },
-            include: [{model:SysTables}],
-          });
-          return {
+  async findOne(id: number) {
+    try {
+      const response = await this.sys_attributes.findOne({
+        where: {
+          id,
+          is_active: 1,
+        },
+        include: [{ model: SysTables }],
+      });
+      return {
         error: false,
         statusCode: 200,
         message: 'Success!',
         data: response,
       };
-      } catch (err) {
+    } catch (err) {
       throw new HttpException(
         {
           error: true,
@@ -99,26 +105,84 @@ import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
         HttpStatus.BAD_REQUEST,
       );
     }
-    }
+  }
 
-  async update(id: number, updateSysAttributesDto: UpdateSysAttributesDto,payload: any) {
+  async findTableAttributes(id: number) {
     try {
-        const response = await this.sys_attributes.update(
-          { 
-            ...updateSysAttributesDto,
-            updated_at: sequelize.fn('NOW'),
-            updated_by: payload.sub,
+      const allAttributes = await this.sys_attributes.findAll({
+        where: {
+          sys_table_id: id,
+          is_active: 1,
+        },
+        attributes: {
+          include: ['attribute_name', 'attribute_type', 'foreign_table_id'],
+        },
+      });
+      const foreignTableAttributes = [];
+      const foreignTableIds = allAttributes.filter(
+        (field) => field.foreign_table_id !== null,
+      );
+      for (let i = 0; i < foreignTableIds.length; i++) {
+        const tableF = await this.sys_tables.findOne({
+          where: {
+            id: foreignTableIds[i],
+            is_active: 1,
           },
-          { where: { id }, returning: true },
-        );
+          attributes: {
+            include: ['id', 'table_name'],
+          },
+        });
+        const tableFAttributes = await this.sys_attributes.findAll({
+          where: {
+            sys_table_id: tableF.id,
+            is_active: 1,
+          },
+          attributes: {
+            include: ['attribute_name', 'attribute_type'],
+          },
+        });
+        foreignTableAttributes.push({
+          table_name: tableF.table_name,
+          attributes: tableFAttributes,
+        });
+      }
 
-    return {
+      return allAttributes;
+    } catch (err) {
+      throw new HttpException(
+        {
+          error: true,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: err.errors[0].message,
+          data: [],
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async update(
+    id: number,
+    updateSysAttributesDto: UpdateSysAttributesDto,
+    payload: any,
+  ) {
+    try {
+      const response = await this.sys_attributes.update(
+        {
+          ...updateSysAttributesDto,
+          updated_at: sequelize.fn('NOW'),
+          updated_by: payload.sub,
+        },
+        { where: { id }, returning: true },
+      );
+
+      return {
         error: false,
         statusCode: 200,
         message: 'Update success!',
         data: response,
       };
-    }catch (err) {
+    } catch (err) {
       throw new HttpException(
         {
           error: true,
@@ -132,31 +196,30 @@ import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
   }
 
   async remove(id: number) {
-      try {
-          const response = await this.sys_attributes.update(
-            {
-                is_active: 0,
-                deleted_at: sequelize.fn('NOW'),
-              },
-              { where: { id } },
-            );
-            return {
-          error: false,
-          statusCode: 200,
-          message: 'Delete success!',
-          data: response,
-        };
-      }catch (err) {
-        throw new HttpException(
-          {
-            error: true,
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: err.errors[0].message,
-            data: [],
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+    try {
+      const response = await this.sys_attributes.update(
+        {
+          is_active: 0,
+          deleted_at: sequelize.fn('NOW'),
+        },
+        { where: { id } },
+      );
+      return {
+        error: false,
+        statusCode: 200,
+        message: 'Delete success!',
+        data: response,
+      };
+    } catch (err) {
+      throw new HttpException(
+        {
+          error: true,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: err.errors[0].message,
+          data: [],
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
-  
+}
