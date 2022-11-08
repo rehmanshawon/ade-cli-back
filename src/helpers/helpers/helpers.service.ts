@@ -8,7 +8,7 @@ import * as fs from 'fs';
 @Injectable()
 export class HelpersService {
   getPagination = (page, size) => {
-    const limit = size ? +size : 20;
+    const limit = size ? +size : 100;
     const offset = page ? page * limit : 0;
 
     return { limit, offset };

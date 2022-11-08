@@ -79,7 +79,7 @@ export class CustomeExceptionsFilter implements ExceptionFilter {
       status: statusCode,
       success: false,
       message,
-      data: [],
+      data: {},
     };
     this.logger.error(
       `Request Method : ${request.method} | Request Path : ${

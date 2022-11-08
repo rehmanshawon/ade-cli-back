@@ -64,63 +64,41 @@ export class SysMenusService {
       ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
       : { is_active: 1 };
     const { limit, offset } = this.helpers.getPagination(page, size);
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_menus' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canRead = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Read',
-        },
-      });
-      if (!canRead) throw new UnauthorizedException();
-      const data = await this.sys_menus.findAndCountAll({
-        order: [['id', 'ASC']],
-        // include: [{ model: SysRoleMenu }, { model: SysModules }],
-        attributes: {
-          exclude: [
-            'is_active',
-            'created_at',
-            'created_by',
-            'updated_at',
-            'updated_by',
-            'deleted_at',
-          ],
-        },
-        where: condition,
-        limit,
-        offset,
-      });
-      const temp = data.rows.map((m) => m.get({ plain: true }));
-      const result = this.helpers.treeData(temp);
-      // const menus = [];
-      // for (let i = 0; i < data.rows.length; i++) {
-      //   const children = [];
-      //   for (let j = 0; j < data.rows.length; j++) {
-      //     if (data.rows[i].id === data.rows[j].parent_menu)
-      //       children.push(data.rows[j].get());
-      //   }
-      //   const menu = data.rows[i].get();
-      //   menu['children'] = children;
-      //   if (children) menus.push(menu);
-      // }
-      // data['rows'] = menus;
-      data['rows'] = result;
 
-      const response = this.helpers.getPagingData(
-        data,
-        page,
-        limit,
-        'sys_menus',
-      );
-
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_menus' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canRead = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Read',
+      },
+    });
+    if (!canRead) throw new UnauthorizedException();
+    const data = await this.sys_menus.findAndCountAll({
+      order: [['id', 'ASC']],
+      // include: [{ model: SysRoleMenu }, { model: SysModules }],
+      attributes: {
+        exclude: [
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },
+      where: condition,
+      limit,
+      offset,
+    });
+    const temp = data.rows.map((m) => m.get({ plain: true }));
+    const result = this.helpers.treeData(temp);
+    data['rows'] = result;
+    const response = this.helpers.getPagingData(data, page, limit, 'sys_menus');
+    return response;
   }
 
   async findOne(id: number, payload: any) {
@@ -151,31 +129,40 @@ export class SysMenusService {
   }
 
   async findByModuleAndParentId(mid: number, pid: number, payload: any) {
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_menus' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canRead = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Read',
-        },
-      });
-      if (!canRead) throw new UnauthorizedException();
-      const response = await this.sys_menus.findAll({
-        where: {
-          module_id: mid,
-          parent_menu: pid,
-          is_active: 1,
-        },
-        include: [{ model: SysRoleMenu }, { model: SysModules }],
-      });
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_menus' },
+    });
+    if (!thisTableInfo)
+      throw new ForbiddenException("You don't have CRUD access to this table!");
+    const canRead = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Read',
+      },
+    });
+    if (!canRead)
+      throw new UnauthorizedException(
+        "You don't have read access to this table!",
+      );
+    const data = await this.sys_menus.findAndCountAll({
+      where: {
+        module_id: mid,
+        parent_menu: pid,
+        is_active: 1,
+      },
+      include: [{ model: SysRoleMenu }, { model: SysModules }],
+    });
+    const { limit, offset } = this.helpers.getPagination(0, 1000);
+    const response = this.helpers.getPagingData(
+      data,
+      offset,
+      limit,
+      'sys_menus',
+    );
+    console.log(response);
+
+    return response;
   }
 
   async update(id: number, updateSysMenusDto: UpdateSysMenusDto, payload: any) {
