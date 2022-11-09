@@ -16,6 +16,7 @@ import { UpdateSysMenusDto } from './dto/update-sys_menus.dto';
 import { SysTables } from '../sys_tables/sys_tables.model';
 import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
 import { SysModules } from 'src/modules/sys_modules/sys_modules.model';
+
 @Injectable()
 export class SysMenusService {
   constructor(
@@ -27,6 +28,114 @@ export class SysMenusService {
     private sysTables: typeof SysTables,
     private helpers: HelpersService,
   ) {}
+
+  private somearray = [
+    {
+      id: 1,
+      menu_name: 'Dashboard',
+      menu_url: 'dashboard',
+      menu_icon_url: '/media/svg/icons/Layout/Layout-arrange.svg',
+      menu_order: 0,
+      parent_menu: 0,
+      module_id: 4,
+      children: [
+        {
+          id: 3,
+          menu_name: 'Dashboard - b2b',
+          menu_url: 'dashboard/b2b',
+          menu_icon_url: null,
+          menu_order: 0,
+          parent_menu: 1,
+          module_id: 4,
+          children: [],
+        },
+        {
+          id: 5,
+          menu_name: 'User Role Wise Features',
+          menu_url: 'user-setting/user-feature',
+          menu_icon_url: null,
+          menu_order: 0,
+          parent_menu: 4,
+          module_id: 4,
+          children: [],
+        },
+      ],
+    },
+    {
+      id: 4,
+      menu_name: 'User Setting',
+      menu_url: null,
+      menu_icon_url: '/media/svg/icons/Shopping/Settings.svg',
+      menu_order: 1,
+      parent_menu: 0,
+      module_id: 4,
+      children: [
+        {
+          id: 6,
+          menu_name: 'Customer Add',
+          menu_url: 'add',
+          menu_icon_url: null,
+          menu_order: 1,
+          parent_menu: 4,
+          module_id: 4,
+          children: [],
+        },
+      ],
+    },
+    {
+      id: 9,
+      menu_name: 'Admin Settings',
+      menu_url: '',
+      menu_icon_url: '/media/svg/icons/General/Settings-2.svg',
+      menu_order: 1,
+      parent_menu: 0,
+      module_id: 4,
+      children: [
+        {
+          id: 10,
+          menu_name: 'Modules',
+          menu_url: 'admin-settings/modules',
+          menu_icon_url: '',
+          menu_order: 1,
+          parent_menu: 9,
+          module_id: 4,
+          children: [],
+        },
+        {
+          id: 11,
+          menu_name: 'Menus',
+          menu_url: 'admin-settings/menu-list',
+          menu_icon_url: '',
+          menu_order: 1,
+          parent_menu: 9,
+          module_id: 4,
+          children: [],
+        },
+      ],
+    },
+    {
+      id: 7,
+      menu_name: 'Users',
+      menu_url: '',
+      menu_icon_url: '/media/svg/icons/Communication/Group.svg',
+      menu_order: 1,
+      parent_menu: 0,
+      module_id: 4,
+      children: [
+        {
+          id: 8,
+          menu_name: 'User Roles',
+          menu_url: 'users/user-roles',
+          menu_icon_url: '',
+          menu_order: 1,
+          parent_menu: 7,
+          module_id: 4,
+          children: [],
+        },
+      ],
+    },
+  ];
+
   async create(createSysMenusDto: CreateSysMenusDto, payload: any) {
     //throw new BadRequestException('this is for test');
     // try {
@@ -42,12 +151,37 @@ export class SysMenusService {
       },
     });
     if (!canCreate) throw new UnauthorizedException();
-    const response = await this.sys_menus.create({
-      ...createSysMenusDto,
-      created_at: sequelize.fn('NOW'),
-      created_by: payload.sub,
+
+    const existingMenus = await this.sys_menus.findAll({
+      where: {
+        module_id: createSysMenusDto.module_id,
+        parent_menu: createSysMenusDto.parent_menu,
+      },
     });
-    return response;
+    if (existingMenus.length) {
+      const response = await this.sys_menus.create({
+        ...createSysMenusDto,
+        menu_order: existingMenus[existingMenus.length - 1].menu_order + 1,
+        created_at: sequelize.fn('NOW'),
+        created_by: payload.sub,
+      });
+      return response;
+    } else {
+      const response = await this.sys_menus.create({
+        ...createSysMenusDto,
+        menu_order: 0,
+        created_at: sequelize.fn('NOW'),
+        created_by: payload.sub,
+      });
+      return response;
+    }
+
+    // const response = await this.sys_menus.create({
+    //   ...createSysMenusDto,
+    //   created_at: sequelize.fn('NOW'),
+    //   created_by: payload.sub,
+    // });
+    // return response;
     // } catch (err) {
     //   throw err;
     // }
@@ -98,9 +232,17 @@ export class SysMenusService {
     const result = this.helpers.treeData(temp);
     data['rows'] = result;
     const response = this.helpers.getPagingData(data, page, limit, 'sys_menus');
+    //this.correctMenuOrder(this.somearray, 0);
+    // console.log(this.somearray);
     return response;
   }
-
+  // correctMenuOrder(arr, key) {
+  //   arr.forEach(function (element, index) {
+  //     element.menu_order = index;
+  //     if (element.children !== undefined)
+  //       this.correctMenuOrder(element.children, key);
+  //   });
+  // }
   async findOne(id: number, payload: any) {
     try {
       const thisTableInfo = await this.sysTables.findOne({
@@ -203,6 +345,8 @@ export class SysMenusService {
       throw err;
     }
   }
+
+  async bulkUpdate(updateSysMenusDto: UpdateSysMenusDto, payload: any) {}
 
   async remove(id: number, payload: any) {
     try {

@@ -30,7 +30,7 @@ export class SysAttributes extends Model {
   primaryKey!: boolean;
 
   @Column({ type: DataType.BOOLEAN, unique: false })
-  foriegnKey!: boolean;
+  foreignKey!: boolean;
 
   @Column({
     type: DataType.INTEGER,

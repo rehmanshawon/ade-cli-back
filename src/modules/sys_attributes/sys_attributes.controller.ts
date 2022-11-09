@@ -40,7 +40,7 @@ export class SysAttributesController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.sysAttributesService.findOne(+id);
+    return this.sysAttributesService.findTableAttributes(+id);
   }
 
   @UseGuards(JwtAuthGuard)

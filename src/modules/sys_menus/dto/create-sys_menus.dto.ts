@@ -10,26 +10,28 @@ import {
   IsDecimal,
   MaxLength,
   MinLength,
-} from 'class-validator'
-;
+} from 'class-validator';
 export class CreateSysMenusDto {
-@IsString()
-menu_name:string;
+  @IsString()
+  menu_name: string;
 
-@IsString()
-menu_url:string;
+  @IsString()
+  @IsOptional()
+  menu_url: string;
 
-@IsString()
-menu_icon_url:string;
+  @IsString()
+  @IsOptional()
+  menu_icon_url: string;
 
-@IsNumber()
-menu_order:number;
+  @IsNumber()
+  @IsOptional()
+  menu_order: number;
 
-@IsNumber()
-parent_menu:number;
+  @IsNumber()
+  @IsOptional()
+  parent_menu: number;
 
-@IsNumber()
-@IsOptional()
-module_id:number;
-
+  @IsNumber()
+  @IsOptional()
+  module_id: number;
 }

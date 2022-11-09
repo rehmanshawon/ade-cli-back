@@ -108,57 +108,81 @@ export class SysAttributesService {
   }
 
   async findTableAttributes(id: number) {
-    try {
-      const allAttributes = await this.sys_attributes.findAll({
+    const allAttributes = await this.sys_attributes.findAll({
+      where: {
+        sys_table_id: id,
+        is_active: 1,
+      },
+      attributes: {
+        exclude: [
+          'id',
+          'primaryKey',
+          'foreignKey',
+          'sys_table_id',
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },
+    });
+    const foreignTableAttributes = [];
+    const foreignTableIds = allAttributes
+      .map((m) => m.get({ plain: true }))
+      .filter((field) => field.foreign_table_id !== null);
+    console.log(foreignTableIds);
+    for (let i = 0; i < foreignTableIds.length; i++) {
+      const tableF = await this.sys_tables.findOne({
         where: {
-          sys_table_id: id,
+          id: foreignTableIds[i].foreign_table_id,
           is_active: 1,
         },
         attributes: {
-          include: ['attribute_name', 'attribute_type', 'foreign_table_id'],
+          include: ['id', 'table_name'],
         },
       });
-      const foreignTableAttributes = [];
-      const foreignTableIds = allAttributes.filter(
-        (field) => field.foreign_table_id !== null,
-      );
-      for (let i = 0; i < foreignTableIds.length; i++) {
-        const tableF = await this.sys_tables.findOne({
-          where: {
-            id: foreignTableIds[i],
-            is_active: 1,
-          },
-          attributes: {
-            include: ['id', 'table_name'],
-          },
-        });
-        const tableFAttributes = await this.sys_attributes.findAll({
-          where: {
-            sys_table_id: tableF.id,
-            is_active: 1,
-          },
-          attributes: {
-            include: ['attribute_name', 'attribute_type'],
-          },
-        });
-        foreignTableAttributes.push({
-          table_name: tableF.table_name,
-          attributes: tableFAttributes,
-        });
-      }
-
-      return allAttributes;
-    } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
+      const tableFAttributes = await this.sys_attributes.findAll({
+        where: {
+          sys_table_id: tableF.id,
+          is_active: 1,
         },
-        HttpStatus.BAD_REQUEST,
-      );
+        attributes: {
+          exclude: [
+            'id',
+            'primaryKey',
+            'foreignKey',
+            'foreign_table_id',
+            'sys_table_id',
+            'is_active',
+            'created_at',
+            'created_by',
+            'updated_at',
+            'updated_by',
+            'deleted_at',
+          ],
+        },
+      });
+      foreignTableAttributes.push({
+        table_name: tableF.table_name,
+        attributes: tableFAttributes,
+      });
     }
+
+    return {
+      thisTable: allAttributes
+        .map((m) => m.get({ plain: true }))
+        .map((m) =>
+          Object.keys(m)
+            .filter((key) => key !== 'foreign_table_id')
+            .reduce((obj, key) => {
+              obj[key] = m[key];
+              return obj;
+            }, {}),
+        ),
+      foreignTables: foreignTableAttributes,
+    };
   }
 
   async update(
