@@ -201,8 +201,7 @@ export class SysMenusService {
     });
     if (!canRead) throw new UnauthorizedException();
     const data = await this.sys_menus.findAndCountAll({
-      order: [['id', 'ASC']],
-      // include: [{ model: SysRoleMenu }, { model: SysModules }],
+      order: [['menu_order', 'ASC']],
       attributes: {
         exclude: [
           'is_active',
@@ -223,13 +222,7 @@ export class SysMenusService {
     const response = this.helpers.getPagingData(data, page, limit, 'sys_menus');
     return response;
   }
-  // correctMenuOrder(arr, key) {
-  //   arr.forEach(function (element, index) {
-  //     element.menu_order = index;
-  //     if (element.children !== undefined)
-  //       this.correctMenuOrder(element.children, key);
-  //   });
-  // }
+
   async findOne(id: number, payload: any) {
     try {
       const thisTableInfo = await this.sysTables.findOne({
