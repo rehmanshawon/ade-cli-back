@@ -354,14 +354,15 @@ export class SysMenusService {
     if (!canUpdate) throw new UnauthorizedException();
     const statements = [];
     const tableName = 'sys_menus';
-
-    for (let i = 0; i < bulkUpdateSysMenusDto.length; i++) {
+    const flattenedMenus = this.helpers.getMembers(bulkUpdateSysMenusDto);
+    console.log(flattenedMenus);
+    for (let i = 0; i < flattenedMenus.length; i++) {
       statements.push(
         this.sys_menus.sequelize.query(
           `UPDATE ${tableName} 
-      SET menu_order=${bulkUpdateSysMenusDto[i].menu_order},
-      parent_menu=${bulkUpdateSysMenusDto[i].parent_menu} 
-      WHERE id=${bulkUpdateSysMenusDto[i].id};`,
+      SET menu_order=${flattenedMenus[i].menu_order},
+      parent_menu=${flattenedMenus[i].parent_menu} 
+      WHERE id=${flattenedMenus[i].id};`,
         ),
       );
     }
