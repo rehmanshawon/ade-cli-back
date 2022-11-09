@@ -15,6 +15,7 @@ import { HelpersService } from 'src/helpers/helpers/helpers.service';
 import { SysMenusService } from './sys_menus.service';
 import { CreateSysMenusDto } from './dto/create-sys_menus.dto';
 import { UpdateSysMenusDto } from './dto/update-sys_menus.dto';
+import { SingleUpdateSysMenusDto } from './dto/bulk-update-sys_menus.dto';
 
 @Controller('sys_menus')
 export class SysMenusController {
@@ -65,6 +66,15 @@ export class SysMenusController {
     @Request() req,
   ) {
     return this.sysMenusService.update(+id, updateSysMenusDto, req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch()
+  bulkUpdate(
+    @Body() updateSysMenusDto: SingleUpdateSysMenusDto[],
+    @Request() req,
+  ) {
+    return this.sysMenusService.bulkUpdate(updateSysMenusDto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)

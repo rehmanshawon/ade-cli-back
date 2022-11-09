@@ -16,6 +16,7 @@ import { UpdateSysMenusDto } from './dto/update-sys_menus.dto';
 import { SysTables } from '../sys_tables/sys_tables.model';
 import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
 import { SysModules } from 'src/modules/sys_modules/sys_modules.model';
+import { SingleUpdateSysMenusDto } from './dto/bulk-update-sys_menus.dto';
 
 @Injectable()
 export class SysMenusService {
@@ -137,8 +138,6 @@ export class SysMenusService {
   ];
 
   async create(createSysMenusDto: CreateSysMenusDto, payload: any) {
-    //throw new BadRequestException('this is for test');
-    // try {
     const thisTableInfo = await this.sysTables.findOne({
       where: { table_name: 'sys_menus' },
     });
@@ -175,16 +174,6 @@ export class SysMenusService {
       });
       return response;
     }
-
-    // const response = await this.sys_menus.create({
-    //   ...createSysMenusDto,
-    //   created_at: sequelize.fn('NOW'),
-    //   created_by: payload.sub,
-    // });
-    // return response;
-    // } catch (err) {
-    //   throw err;
-    // }
   }
 
   async findAll(
@@ -232,8 +221,6 @@ export class SysMenusService {
     const result = this.helpers.treeData(temp);
     data['rows'] = result;
     const response = this.helpers.getPagingData(data, page, limit, 'sys_menus');
-    //this.correctMenuOrder(this.somearray, 0);
-    // console.log(this.somearray);
     return response;
   }
   // correctMenuOrder(arr, key) {
@@ -312,41 +299,75 @@ export class SysMenusService {
       limit,
       'sys_menus',
     );
-    console.log(response);
 
     return response;
   }
 
   async update(id: number, updateSysMenusDto: UpdateSysMenusDto, payload: any) {
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_menus' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canUpdate = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Update',
-        },
-      });
-      if (!canUpdate) throw new UnauthorizedException();
-      const response = await this.sys_menus.update(
-        {
-          ...updateSysMenusDto,
-          updated_at: sequelize.fn('NOW'),
-          updated_by: payload.sub,
-        },
-        { where: { id }, returning: true },
-      );
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_menus' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canUpdate = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Update',
+      },
+    });
+    if (!canUpdate) throw new UnauthorizedException();
+    const data = await this.sys_menus.update(
+      {
+        ...updateSysMenusDto,
+        updated_at: sequelize.fn('NOW'),
+        updated_by: payload.sub,
+      },
+      { where: { id }, returning: true },
+    );
 
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const { limit, offset } = this.helpers.getPagination(0, 1000);
+    const response = this.helpers.getPagingData(
+      data,
+      offset,
+      limit,
+      'sys_menus',
+    );
+
+    return response;
   }
 
-  async bulkUpdate(updateSysMenusDto: UpdateSysMenusDto, payload: any) {}
+  async bulkUpdate(
+    bulkUpdateSysMenusDto: SingleUpdateSysMenusDto[],
+    payload: any,
+  ) {
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_menus' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canUpdate = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Update',
+      },
+    });
+    if (!canUpdate) throw new UnauthorizedException();
+    const statements = [];
+    const tableName = 'sys_menus';
+
+    for (let i = 0; i < bulkUpdateSysMenusDto.length; i++) {
+      statements.push(
+        this.sys_menus.sequelize.query(
+          `UPDATE ${tableName} 
+      SET menu_order=${bulkUpdateSysMenusDto[i].menu_order},
+      parent_menu=${bulkUpdateSysMenusDto[i].parent_menu} 
+      WHERE id=${bulkUpdateSysMenusDto[i].id};`,
+        ),
+      );
+    }
+    const result = await Promise.all(statements);
+    return result;
+  }
 
   async remove(id: number, payload: any) {
     try {

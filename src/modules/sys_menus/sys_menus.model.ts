@@ -22,7 +22,7 @@ export class SysMenus extends Model {
   @Index({ name: 'PRIMARY', using: 'BTREE', order: 'ASC', unique: true })
   id?: number;
 
-  @Column({ type: DataType.STRING, unique: true })
+  @Column({ type: DataType.STRING, unique: false })
   menu_name!: string;
 
   @Column({ type: DataType.STRING, unique: false })
