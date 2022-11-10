@@ -121,8 +121,8 @@ export class SysUsersService {
         },
       ],
     });
-    // console.log(response);
-    return response || {}; //as SysUsers;
+
+    return response || {};
   }
 
   async findOneByEmail(email: string): Promise<SysUsers> {
@@ -158,8 +158,8 @@ export class SysUsersService {
         },
       ],
     });
-    // console.log(response);
-    return response;
+
+    return response || ({} as SysUsers);
   }
 
   async update(id: number, updateSysUsersDto: UpdateSysUsersDto, payload: any) {
