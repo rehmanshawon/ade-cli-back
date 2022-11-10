@@ -1,8 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { MusabbirModule } from 'src/modules/musabbir/musabbir.module';
 
-import {Musabbir} from 'src/modules/musabbir/musabbir.model';
-
+import { Musabbir } from 'src/modules/musabbir/musabbir.model';
 
 import { SysUserModuleModule } from 'src/modules/sys_user_module/sys_user_module.module';
 
@@ -56,6 +55,7 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       isGlobal: true,
     }),
     SequelizeModule.forRoot({
+      logging: false,
       dialect:
         process.env.DB_DIALECT == 'mysql'
           ? `mysql`
@@ -69,7 +69,8 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [Musabbir,
+      models: [
+        Musabbir,
         SysUserModule,
         SysRoleMenu,
         SysMenus,
@@ -82,7 +83,8 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       ],
     }),
     AuthModule,
-    CreateTableModule,MusabbirModule,
+    CreateTableModule,
+    MusabbirModule,
     SysUserModuleModule,
     SysRoleMenuModule,
     SysMenusModule,

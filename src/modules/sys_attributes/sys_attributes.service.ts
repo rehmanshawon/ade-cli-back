@@ -132,7 +132,7 @@ export class SysAttributesService {
     const foreignTableIds = allAttributes
       .map((m) => m.get({ plain: true }))
       .filter((field) => field.foreign_table_id !== null);
-    console.log(foreignTableIds);
+    // console.log(foreignTableIds);
     for (let i = 0; i < foreignTableIds.length; i++) {
       const tableF = await this.sys_tables.findOne({
         where: {

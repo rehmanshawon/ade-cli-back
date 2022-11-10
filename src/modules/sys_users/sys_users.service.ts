@@ -48,66 +48,88 @@ export class SysUsersService {
       ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
       : { is_active: 1 };
     const { limit, offset } = this.helpers.getPagination(page, size);
-    try {
-      const data = await this.sys_users.findAndCountAll({
-        order: [['id', 'DESC']],
-        include: [{ model: SysUserModule }, { model: SysRoles }],
-        where: condition,
-        limit,
-        offset,
-      });
-      const response = this.helpers.getPagingData(
-        data,
-        page,
-        limit,
-        'sys_users',
-      );
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Success!',
-        data: response,
-      };
-    } catch (err) {
-      throw new HttpException(
+
+    const data = await this.sys_users.findAndCountAll({
+      order: [['id', 'DESC']],
+      include: [
         {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
+          model: SysRoles,
+          attributes: {
+            exclude: [
+              'id',
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
         },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+      ],
+      attributes: {
+        exclude: [
+          'password',
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },
+      where: condition,
+      limit,
+      offset,
+    });
+    const response = this.helpers.getPagingData(data, page, limit, 'sys_users');
+    return response;
   }
 
-  async findOne(id: number): Promise<SysUsers> {
-    try {
-      const response = await this.sys_users.findOne({
-        where: {
-          id,
-          is_active: 1,
-        },
-        include: [{ model: SysUserModule }, { model: SysRoles }],
-      });
-      // return {
-      //   error: false,
-      //   statusCode: 200,
-      //   message: 'Success!',
-      //   data: response,
-      // };
-      return response;
-    } catch (err) {
-      throw new HttpException(
+  async findOne(id: number) {
+    const response = await this.sys_users.findOne({
+      attributes: {
+        exclude: [
+          'password',
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },
+      where: {
+        id,
+        is_active: 1,
+      },
+      include: [
+        // { model: SysUserModule },
         {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
+          model: SysRoles,
+          attributes: {
+            exclude: [
+              'id',
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
         },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+      ],
+    });
+
+    return {
+      totalItems: response ? 1 : 0,
+      sys_users: response ? [response.get()] : [],
+      totalPages: response ? 1 : 0,
+      currentPage: 0,
+    };
+    // if (response) return response;
+    // else return {} as SysUsers;
   }
 
   async findOneByEmail(email: string): Promise<SysUsers> {

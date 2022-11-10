@@ -35,7 +35,7 @@ export class CustomeExceptionsFilter implements ExceptionFilter {
 
     const request = ctx.getRequest();
     const response = ctx.getResponse();
-    console.log(exception);
+    //console.log(exception);
 
     let statusCode =
       exception instanceof HttpException

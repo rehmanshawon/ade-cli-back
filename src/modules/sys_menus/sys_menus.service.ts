@@ -30,113 +30,6 @@ export class SysMenusService {
     private helpers: HelpersService,
   ) {}
 
-  private somearray = [
-    {
-      id: 1,
-      menu_name: 'Dashboard',
-      menu_url: 'dashboard',
-      menu_icon_url: '/media/svg/icons/Layout/Layout-arrange.svg',
-      menu_order: 0,
-      parent_menu: 0,
-      module_id: 4,
-      children: [
-        {
-          id: 3,
-          menu_name: 'Dashboard - b2b',
-          menu_url: 'dashboard/b2b',
-          menu_icon_url: null,
-          menu_order: 0,
-          parent_menu: 1,
-          module_id: 4,
-          children: [],
-        },
-        {
-          id: 5,
-          menu_name: 'User Role Wise Features',
-          menu_url: 'user-setting/user-feature',
-          menu_icon_url: null,
-          menu_order: 0,
-          parent_menu: 4,
-          module_id: 4,
-          children: [],
-        },
-      ],
-    },
-    {
-      id: 4,
-      menu_name: 'User Setting',
-      menu_url: null,
-      menu_icon_url: '/media/svg/icons/Shopping/Settings.svg',
-      menu_order: 1,
-      parent_menu: 0,
-      module_id: 4,
-      children: [
-        {
-          id: 6,
-          menu_name: 'Customer Add',
-          menu_url: 'add',
-          menu_icon_url: null,
-          menu_order: 1,
-          parent_menu: 4,
-          module_id: 4,
-          children: [],
-        },
-      ],
-    },
-    {
-      id: 9,
-      menu_name: 'Admin Settings',
-      menu_url: '',
-      menu_icon_url: '/media/svg/icons/General/Settings-2.svg',
-      menu_order: 1,
-      parent_menu: 0,
-      module_id: 4,
-      children: [
-        {
-          id: 10,
-          menu_name: 'Modules',
-          menu_url: 'admin-settings/modules',
-          menu_icon_url: '',
-          menu_order: 1,
-          parent_menu: 9,
-          module_id: 4,
-          children: [],
-        },
-        {
-          id: 11,
-          menu_name: 'Menus',
-          menu_url: 'admin-settings/menu-list',
-          menu_icon_url: '',
-          menu_order: 1,
-          parent_menu: 9,
-          module_id: 4,
-          children: [],
-        },
-      ],
-    },
-    {
-      id: 7,
-      menu_name: 'Users',
-      menu_url: '',
-      menu_icon_url: '/media/svg/icons/Communication/Group.svg',
-      menu_order: 1,
-      parent_menu: 0,
-      module_id: 4,
-      children: [
-        {
-          id: 8,
-          menu_name: 'User Roles',
-          menu_url: 'users/user-roles',
-          menu_icon_url: '',
-          menu_order: 1,
-          parent_menu: 7,
-          module_id: 4,
-          children: [],
-        },
-      ],
-    },
-  ];
-
   async create(createSysMenusDto: CreateSysMenusDto, payload: any) {
     const thisTableInfo = await this.sysTables.findOne({
       where: { table_name: 'sys_menus' },
@@ -157,23 +50,23 @@ export class SysMenusService {
         parent_menu: createSysMenusDto.parent_menu,
       },
     });
+    let data;
     if (existingMenus.length) {
-      const response = await this.sys_menus.create({
+      data = await this.sys_menus.create({
         ...createSysMenusDto,
         menu_order: existingMenus[existingMenus.length - 1].menu_order + 1,
         created_at: sequelize.fn('NOW'),
         created_by: payload.sub,
       });
-      return response;
     } else {
-      const response = await this.sys_menus.create({
+      data = await this.sys_menus.create({
         ...createSysMenusDto,
         menu_order: 0,
         created_at: sequelize.fn('NOW'),
         created_by: payload.sub,
       });
-      return response;
     }
+    return {};
   }
 
   async findAll(
@@ -224,30 +117,33 @@ export class SysMenusService {
   }
 
   async findOne(id: number, payload: any) {
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_menus' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canRead = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Read',
-        },
-      });
-      if (!canRead) throw new UnauthorizedException();
-      const response = await this.sys_menus.findOne({
-        where: {
-          id,
-          is_active: 1,
-        },
-        include: [{ model: SysRoleMenu }, { model: SysModules }],
-      });
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_menus' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canRead = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Read',
+      },
+    });
+    if (!canRead) throw new UnauthorizedException();
+    const data = await this.sys_menus.findOne({
+      where: {
+        id,
+        is_active: 1,
+      },
+      include: [{ model: SysRoleMenu }, { model: SysModules }],
+    });
+    const { limit, offset } = this.helpers.getPagination(0, 1000);
+    const response = this.helpers.getPagingData(
+      data,
+      offset,
+      limit,
+      'sys_menus',
+    );
+    return response;
   }
 
   async findByModuleAndParentId(mid: number, pid: number, payload: any) {
@@ -283,7 +179,6 @@ export class SysMenusService {
         parent_menu: pid,
         is_active: 1,
       },
-      //include: [{ model: SysRoleMenu }, { model: SysModules }],
     });
     const { limit, offset } = this.helpers.getPagination(0, 1000);
     const response = this.helpers.getPagingData(
@@ -348,7 +243,6 @@ export class SysMenusService {
     const statements = [];
     const tableName = 'sys_menus';
     const flattenedMenus = this.helpers.getMembers(bulkUpdateSysMenusDto);
-    console.log(flattenedMenus);
     for (let i = 0; i < flattenedMenus.length; i++) {
       statements.push(
         this.sys_menus.sequelize.query(
@@ -359,34 +253,45 @@ export class SysMenusService {
         ),
       );
     }
-    const result = await Promise.all(statements);
-    return result;
+    const data = await Promise.all(statements);
+    const { limit, offset } = this.helpers.getPagination(0, 1000);
+    const response = this.helpers.getPagingData(
+      data,
+      offset,
+      limit,
+      'sys_menus',
+    );
+    return response;
   }
 
   async remove(id: number, payload: any) {
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_menus' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canDelete = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Delete',
-        },
-      });
-      if (!canDelete) throw new UnauthorizedException();
-      const response = await this.sys_menus.update(
-        {
-          is_active: 0,
-          deleted_at: sequelize.fn('NOW'),
-        },
-        { where: { id } },
-      );
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_menus' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canDelete = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Delete',
+      },
+    });
+    if (!canDelete) throw new UnauthorizedException();
+    const data = await this.sys_menus.update(
+      {
+        is_active: 0,
+        deleted_at: sequelize.fn('NOW'),
+      },
+      { where: { id } },
+    );
+    const { limit, offset } = this.helpers.getPagination(0, 1000);
+    const response = this.helpers.getPagingData(
+      data,
+      offset,
+      limit,
+      'sys_menus',
+    );
+
+    return response;
   }
 }
