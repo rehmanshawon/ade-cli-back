@@ -32,9 +32,16 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
           response.message = data;
         } else if (typeof data === 'object') {
           if (method === 'GET') {
-            response.message = `${data.totalItems} item${
-              data.totalItems > 1 ? 's' : ''
-            } found.`;
+            // check if the data has many records
+            const emptyObject =
+              data &&
+              Object.keys(data).length === 0 &&
+              Object.getPrototypeOf(data) === Object.prototype;
+            const hasMany =
+              !emptyObject && data.hasOwnProperty('totalItems') ? true : false;
+            response.message = `${
+              hasMany ? data.totalItems : emptyObject ? 0 : 1
+            } item${hasMany && data.totalItems > 1 ? 's' : ''} found.`;
           }
           if (method === 'POST') {
             response.message = `Data added successfully!`;

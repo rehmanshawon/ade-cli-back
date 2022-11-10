@@ -121,44 +121,45 @@ export class SysUsersService {
         },
       ],
     });
-
-    return {
-      totalItems: response ? 1 : 0,
-      sys_users: response ? [response.get()] : [],
-      totalPages: response ? 1 : 0,
-      currentPage: 0,
-    };
-    // if (response) return response;
-    // else return {} as SysUsers;
+    // console.log(response);
+    return response || {}; //as SysUsers;
   }
 
   async findOneByEmail(email: string): Promise<SysUsers> {
-    try {
-      const response = await this.sys_users.findOne({
-        where: {
-          email,
-          is_active: 1,
-        },
-        include: [{ model: SysUserModule }, { model: SysRoles }],
-      });
-      // return {
-      //   error: false,
-      //   statusCode: 200,
-      //   message: 'Success!',
-      //   data: response,
-      // };
-      return response;
-    } catch (err) {
-      throw new HttpException(
+    const response = await this.sys_users.findOne({
+      attributes: {
+        exclude: [
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },
+      where: {
+        email,
+        is_active: 1,
+      },
+      include: [
         {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
+          model: SysRoles,
+          attributes: {
+            exclude: [
+              'id',
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
         },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+      ],
+    });
+    // console.log(response);
+    return response;
   }
 
   async update(id: number, updateSysUsersDto: UpdateSysUsersDto, payload: any) {

@@ -15,7 +15,7 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByEmail(email);
-    // console.log(user);
+    //console.log(user.get({ plain: true }));
     if (!user) {
       return null;
     }
@@ -27,7 +27,8 @@ export class AuthService {
     }
 
     // tslint:disable-next-line: no-string-literal
-    const { password, ...result } = user['dataValues'];
+    // const { password, ...result } = user['dataValues'];
+    const { password, ...result } = user.get({ plain: true });
     return result;
   }
 
@@ -37,6 +38,7 @@ export class AuthService {
       email: user.email,
       sub: user.id,
       role: user.role_id,
+      role_name: user.SysRole.role_name,
     };
     //console.log(payload);
     return {
