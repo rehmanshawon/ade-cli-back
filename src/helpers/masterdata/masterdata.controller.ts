@@ -15,7 +15,7 @@ import { HelpersService } from '../helpers/helpers.service';
 import { MDCreateTableDto } from './dto/md-create-table.dto';
 import { MasterDataService } from './masterdata.service';
 
-@Controller('masterdata')
+@Controller('fazil')
 export class MasterDataController {
   constructor(
     private masterDataService: MasterDataService,
@@ -32,7 +32,7 @@ export class MasterDataController {
 
     const association = await this.masterDataService.createModel(table);
 
-    Table1.sync().then(() => console.log('Sync complete'));
+    //Table1.sync().then(() => console.log('Sync complete'));
 
     // const result = await this.createTableService.createUserModule(
     //   table,
