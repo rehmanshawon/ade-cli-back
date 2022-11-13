@@ -66,7 +66,7 @@ export class SysMenusService {
         created_by: payload.sub,
       });
     }
-    return {};
+    return data || {};
   }
 
   async findAll(

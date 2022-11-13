@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
-import { MusabbirModule } from 'src/modules/musabbir/musabbir.module';
+import {Rashed} from 'src/modules/rashed/rashed.model';
 
-import { Musabbir } from 'src/modules/musabbir/musabbir.model';
+import { Table1 } from 'src/modules/table1/table1.model';
 
 import { SysUserModuleModule } from 'src/modules/sys_user_module/sys_user_module.module';
 
@@ -48,6 +48,8 @@ import { ConfigModule } from '@nestjs/config';
 import { CreateTableModule } from './helpers/create-table/create-table.module';
 import { APP_FILTER } from '@nestjs/core';
 import { CustomeExceptionsFilter } from './custome-exceptions.filter';
+import { Sample } from './sample.model';
+import { MasterDataModule } from './helpers/masterdata/masterdata.module';
 
 @Module({
   imports: [
@@ -69,8 +71,8 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [
-        Musabbir,
+      models: [Rashed,
+        Table1,
         SysUserModule,
         SysRoleMenu,
         SysMenus,
@@ -80,11 +82,13 @@ import { CustomeExceptionsFilter } from './custome-exceptions.filter';
         SysRoles,
         SysAttributes,
         SysTables,
+        Sample,
+        Table1,
       ],
     }),
     AuthModule,
     CreateTableModule,
-    MusabbirModule,
+    MasterDataModule,
     SysUserModuleModule,
     SysRoleMenuModule,
     SysMenusModule,

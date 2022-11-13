@@ -14,7 +14,7 @@ import { JwtAuthGuard } from 'src/modules/sys-auth/jwt-auth.guard';
 import { CreateTableService } from './create-table.service';
 import { CreateTableDto } from './dto/create-table.dto';
 
-@Controller('create-table')
+@Controller('masterdata')
 export class CreateTableController {
   constructor(private createTableService: CreateTableService) {}
   @UseGuards(JwtAuthGuard)
@@ -27,11 +27,12 @@ export class CreateTableController {
     await this.createTableService.createTable(table, req.user);
 
     const association = await this.createTableService.createModel(table);
-
-    const result = await this.createTableService.createUserModule(
-      table,
-      association as string[],
-    );
+    if (table.createCrud) {
+      const result = await this.createTableService.createUserModule(
+        table,
+        association as string[],
+      );
+    }
     return association;
   }
 }

@@ -3,6 +3,8 @@ import { Controller, Get, Request, Post, UseGuards } from '@nestjs/common';
 import { LocalAuthGuard } from './modules/sys-auth/local-auth.guard';
 import { AuthService } from './modules/sys-auth/sys-auth.service';
 import { JwtAuthGuard } from './modules/sys-auth/jwt-auth.guard';
+import { Sample } from './sample.model';
+import { Table1 } from './modules/table1/table1.model';
 //import { AppService } from './app.service';
 
 @Controller()
@@ -20,6 +22,13 @@ export class AppController {
   getProfile(@Request() req) {
     console.log(req.user);
     return req.user;
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Get('table')
+  async getTable() {
+    await Table1.sync({ alter: true });
+    return 'done';
   }
   // constructor(private readonly appService: AppService) {}
 

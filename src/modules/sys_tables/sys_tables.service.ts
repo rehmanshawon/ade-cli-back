@@ -18,29 +18,12 @@ export class SysTablesService {
     private helpers: HelpersService,
   ) {}
   async create(createSysTablesDto: CreateSysTablesDto, payload: any) {
-    try {
-      const response = await this.sys_tables.create({
-        ...createSysTablesDto,
-        created_at: sequelize.fn('NOW'),
-        created_by: payload.sub,
-      });
-      return {
-        error: false,
-        statusCode: 201,
-        message: 'record created successfully!',
-        data: response,
-      };
-    } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const response = await this.sys_tables.create({
+      ...createSysTablesDto,
+      created_at: sequelize.fn('NOW'),
+      created_by: payload.sub,
+    });
+    return response || {};
   }
 
   async findAll(
@@ -54,24 +37,45 @@ export class SysTablesService {
       ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
       : { is_active: 1 };
     const { limit, offset } = this.helpers.getPagination(page, size);
-    try {
-      const data = await this.sys_tables.findAndCountAll({
-        order: [['id', 'DESC']],
-        include: [{ model: SysRoleTable }, { model: SysAttributes }],
-        where: condition,
-        limit,
-        offset,
-      });
-      const response = this.helpers.getPagingData(
-        data,
-        page,
-        limit,
-        'sys_tables',
-      );
-      return response;
-    } catch (err) {
-      throw err;
-    }
+
+    const data = await this.sys_tables.findAndCountAll({
+      order: [['id', 'DESC']],
+      // include: [
+      //   {
+      //     model: SysAttributes,
+      //     attributes: {
+      //       exclude: [
+      //         'is_active',
+      //         'created_at',
+      //         'created_by',
+      //         'updated_at',
+      //         'updated_by',
+      //         'deleted_at',
+      //       ],
+      //     },
+      //   },
+      // ],
+      where: condition,
+      attributes: {
+        exclude: [
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },
+      limit,
+      offset,
+    });
+    const response = this.helpers.getPagingData(
+      data,
+      page,
+      limit,
+      'sys_tables',
+    );
+    return response;
   }
 
   async findOne(id: number, payload: any) {

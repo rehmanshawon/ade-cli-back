@@ -26,6 +26,7 @@ class referenceDefinition {
 
 class enumDefinition {
   enumValues: string[];
+  defaultValue: string;
   enumName: string;
 }
 
@@ -72,12 +73,11 @@ class fieldDefinition {
   enum: enumDefinition;
 }
 
-export class CreateTableDto {
+export class MDCreateTableDto {
   tableName: string;
   @ApiProperty({
     isArray: true,
     type: fieldDefinition,
   })
   fieldList: fieldDefinition[];
-  createCrud: boolean = false;
 }
