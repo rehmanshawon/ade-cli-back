@@ -14,7 +14,7 @@ import { JwtAuthGuard } from 'src/modules/sys-auth/jwt-auth.guard';
 import { CreateTableService } from './create-table.service';
 import { CreateTableDto } from './dto/create-table.dto';
 
-@Controller('masterdata')
+@Controller('dummy')
 export class CreateTableController {
   constructor(private createTableService: CreateTableService) {}
   @UseGuards(JwtAuthGuard)

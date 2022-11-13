@@ -66,7 +66,7 @@ export class SysMenusService {
         created_by: payload.sub,
       });
     }
-    return data || {};
+    return `record added to sys_menus successfully!`;
   }
 
   async findAll(
@@ -113,7 +113,7 @@ export class SysMenusService {
     const result = this.helpers.treeData(temp);
     data['rows'] = result;
     const response = this.helpers.getPagingData(data, page, limit, 'sys_menus');
-    return response;
+    return response || {};
   }
 
   async findOne(id: number, payload: any) {

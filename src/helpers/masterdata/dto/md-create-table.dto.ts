@@ -26,7 +26,6 @@ class referenceDefinition {
 
 class enumDefinition {
   enumValues: string[];
-  defaultValue: string;
   enumName: string;
 }
 
@@ -80,4 +79,5 @@ export class MDCreateTableDto {
     type: fieldDefinition,
   })
   fieldList: fieldDefinition[];
+  createCrud: boolean = false;
 }

@@ -1,7 +1,13 @@
 /* eslint-disable prettier/prettier */
-import {Rashed} from 'src/modules/rashed/rashed.model';
+import { NewtableModule } from 'src/modules/newtable/newtable.module';
 
-import { Table1 } from 'src/modules/table1/table1.model';
+import {Newtable} from 'src/modules/newtable/newtable.model';
+
+import {Exampleforeign} from 'src/modules/exampleforeign/exampleforeign.model';
+
+import { ExampleModule } from 'src/modules/example/example.module';
+
+import {Example} from 'src/modules/example/example.model';
 
 import { SysUserModuleModule } from 'src/modules/sys_user_module/sys_user_module.module';
 
@@ -48,7 +54,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CreateTableModule } from './helpers/create-table/create-table.module';
 import { APP_FILTER } from '@nestjs/core';
 import { CustomeExceptionsFilter } from './custome-exceptions.filter';
-import { Sample } from './sample.model';
+
 import { MasterDataModule } from './helpers/masterdata/masterdata.module';
 
 @Module({
@@ -57,7 +63,11 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       isGlobal: true,
     }),
     SequelizeModule.forRoot({
-      logging: false,
+      synchronize: true,
+      autoLoadModels: true,
+      //sync: { alter: true},
+      // logging: (m) => console.log(m),
+      //logging:f
       dialect:
         process.env.DB_DIALECT == 'mysql'
           ? `mysql`
@@ -71,8 +81,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [Rashed,
-        Table1,
+      models: [Newtable,Exampleforeign,Example,
         SysUserModule,
         SysRoleMenu,
         SysMenus,
@@ -82,12 +91,10 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
         SysRoles,
         SysAttributes,
         SysTables,
-        Sample,
-        Table1,
       ],
     }),
     AuthModule,
-    CreateTableModule,
+    CreateTableModule,NewtableModule,ExampleModule,
     MasterDataModule,
     SysUserModuleModule,
     SysRoleMenuModule,

@@ -16,7 +16,13 @@ import {
 } from 'sequelize-typescript';
 import { SysModules } from 'src/modules/sys_modules/sys_modules.model';
 
-@Table({ tableName: 'sys_menus', timestamps: false, comment: '' })
+@Table({
+  tableName: 'sys_menus',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  comment: '',
+})
 export class SysMenus extends Model {
   @Column({ primaryKey: true, autoIncrement: true, type: DataType.INTEGER })
   @Index({ name: 'PRIMARY', using: 'BTREE', order: 'ASC', unique: true })
@@ -37,20 +43,18 @@ export class SysMenus extends Model {
   @Column({ type: DataType.INTEGER, unique: false })
   parent_menu?: number;
 
-  @Column({ type: DataType.BOOLEAN })
-  is_active!: boolean;
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: true,
+    allowNull: false,
+  })
+  is_active: boolean;
 
   @Column({ type: DataType.INTEGER })
   created_by?: number;
 
   @Column({ type: DataType.INTEGER })
   updated_by?: number;
-
-  @Column({ type: DataType.DATE })
-  created_at!: Date;
-
-  @Column({ type: DataType.DATE })
-  updated_at?: Date;
 
   @Column({ type: DataType.DATE })
   deleted_at?: Date;

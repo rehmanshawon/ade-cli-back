@@ -12,18 +12,18 @@
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../sys-auth/jwt-auth.guard';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
-import { MusabbirService } from './musabbir.service';
-import { CreateMusabbirDto } from './dto/create-musabbir.dto';
-import { UpdateMusabbirDto } from './dto/update-musabbir.dto';
+import { NewtableService } from './newtable.service';
+import { CreateNewtableDto } from './dto/create-newtable.dto';
+import { UpdateNewtableDto } from './dto/update-newtable.dto';
 
-@Controller('musabbir')
-export class MusabbirController {
-  constructor(private readonly musabbirService: MusabbirService) {}
+@Controller('newtable')
+export class NewtableController {
+  constructor(private readonly newtableService: NewtableService) {}
 
     @UseGuards(JwtAuthGuard)
     @Post()
-    create(@Body() createMusabbirDto: CreateMusabbirDto, @Request() req) {
-      return this.musabbirService.create(createMusabbirDto, req.user);
+    create(@Body() createNewtableDto: CreateNewtableDto, @Request() req) {
+      return this.newtableService.create(createNewtableDto, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -31,29 +31,29 @@ export class MusabbirController {
     async findAll(@Request() req) {
       const { page, size, field, search } = req.query;
 
-      return await this.musabbirService.findAll(page, size, field, search,req.user);
+      return await this.newtableService.findAll(page, size, field, search,req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get(':id')
     findOne(@Param('id') id: string, @Request() req) {
-      return this.musabbirService.findOne(+id, req.user);
+      return this.newtableService.findOne(+id, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch(':id')
     update(
       @Param('id') id: string,
-      @Body() updateMusabbirDto: UpdateMusabbirDto,
+      @Body() updateNewtableDto: UpdateNewtableDto,
       @Request() req,
     ) {
-      return this.musabbirService.update(+id, updateMusabbirDto, req.user);
+      return this.newtableService.update(+id, updateNewtableDto, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
     remove(@Param('id') id: string, @Request() req) {
-      return this.musabbirService.remove(+id, req.user);
+      return this.newtableService.remove(+id, req.user);
     }
 
   }

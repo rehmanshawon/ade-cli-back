@@ -12,11 +12,8 @@ import {
   MinLength,
 } from 'class-validator'
 ;
-export class CreateMusabbirDto {
+export class CreateExampleDto {
 @IsString()
 name:string;
-
-@IsNumber()
-age:number;
 
 }
