@@ -10,10 +10,12 @@ import {
   ForbiddenException,
   Inject,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { Response } from 'express';
-
+import sequelize from 'sequelize';
 //import { databaseProviders } from 'src/database.provider';
 import { JwtAuthGuard } from 'src/modules/sys-auth/jwt-auth.guard';
+import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
 import { HelpersService } from '../helpers/helpers.service';
 import { MDCreateTableDto } from './dto/md-create-table.dto';
 import { MasterDataService } from './masterdata.service';
@@ -24,6 +26,7 @@ export class MasterDataController {
     //@Inject(databaseProviders) private dbService,
     private masterDataService: MasterDataService,
     private helpers: HelpersService,
+    @InjectModel(SysTables) private sysTables: typeof SysTables,
   ) {}
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -49,12 +52,28 @@ export class MasterDataController {
     return 'table created successfully!';
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Get()
-  // getProfile(@Request() req) {
-  //   console.log(req.user);
-  //   return req.user;
-  // }
+  //@UseGuards(JwtAuthGuard)
+  @Get()
+  async getTables(@Request() req) {
+    const response = await this.sysTables.sequelize
+      .getQueryInterface()
+      .showAllTables();
+    return { tables: response } || {};
+    // this.sysTables.sequelize
+    //   .getQueryInterface()
+    //   .showAllTables()
+    //   .then((tableObj) => {
+    //     console.log('// Tables in database', '==========================');
+    //     console.log(tableObj);
+    //     return tableObj;
+    //   })
+    //   .catch((err) => {
+    //     console.log('showAllSchemas ERROR', err);
+    //     return err;
+    //   });
+    //console.log(req.user);
+    //return req.user;
+  }
 
   async addModelToSelf(table: MDCreateTableDto) {
     const modelToAdd = await this.helpers.capitalizeFirstLetter(
