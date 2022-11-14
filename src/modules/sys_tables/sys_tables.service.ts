@@ -20,7 +20,6 @@ export class SysTablesService {
   async create(createSysTablesDto: CreateSysTablesDto, payload: any) {
     const response = await this.sys_tables.create({
       ...createSysTablesDto,
-      created_at: sequelize.fn('NOW'),
       created_by: payload.sub,
     });
     return response || {};
@@ -40,21 +39,6 @@ export class SysTablesService {
 
     const data = await this.sys_tables.findAndCountAll({
       order: [['id', 'DESC']],
-      // include: [
-      //   {
-      //     model: SysAttributes,
-      //     attributes: {
-      //       exclude: [
-      //         'is_active',
-      //         'created_at',
-      //         'created_by',
-      //         'updated_at',
-      //         'updated_by',
-      //         'deleted_at',
-      //       ],
-      //     },
-      //   },
-      // ],
       where: condition,
       attributes: {
         exclude: [
@@ -75,35 +59,33 @@ export class SysTablesService {
       limit,
       'sys_tables',
     );
-    return response;
+    return response || {};
   }
 
   async findOne(id: number, payload: any) {
-    try {
-      const response = await this.sys_tables.findOne({
-        where: {
-          id,
-          is_active: 1,
-        },
-        include: [{ model: SysRoleTable }, { model: SysAttributes }],
-      });
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Success!',
-        data: response,
-      };
-    } catch (err) {
-      throw new HttpException(
+    const response = await this.sys_tables.findOne({
+      where: {
+        id,
+        is_active: 1,
+      },
+      include: [
+        //{ model: SysRoleTable },
         {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
+          model: SysAttributes,
+          attributes: {
+            exclude: [
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
         },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+      ],
+    });
+    return response || {};
   }
 
   async update(
@@ -111,60 +93,26 @@ export class SysTablesService {
     updateSysTablesDto: UpdateSysTablesDto,
     payload: any,
   ) {
-    try {
-      const response = await this.sys_tables.update(
-        {
-          ...updateSysTablesDto,
-          updated_at: sequelize.fn('NOW'),
-          updated_by: payload.sub,
-        },
-        { where: { id }, returning: true },
-      );
+    const response = await this.sys_tables.update(
+      {
+        ...updateSysTablesDto,
+        updated_at: sequelize.fn('NOW'),
+        updated_by: payload.sub,
+      },
+      { where: { id }, returning: true },
+    );
 
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Update success!',
-        data: response,
-      };
-    } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    return 'data updated!';
   }
 
   async remove(id: number, payload: any) {
-    try {
-      const response = await this.sys_tables.update(
-        {
-          is_active: 0,
-          deleted_at: sequelize.fn('NOW'),
-        },
-        { where: { id } },
-      );
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Delete success!',
-        data: response,
-      };
-    } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const response = await this.sys_tables.update(
+      {
+        is_active: 0,
+        deleted_at: sequelize.fn('NOW'),
+      },
+      { where: { id } },
+    );
+    return 'data removed!';
   }
 }

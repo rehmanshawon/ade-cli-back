@@ -29,30 +29,25 @@ export class SysModulesService {
     private helpers: HelpersService,
   ) {}
   async create(createSysModulesDto: CreateSysModulesDto, payload: any) {
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_modules' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canCreate = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Create',
-        },
-      });
-      if (!canCreate) throw new UnauthorizedException();
-      const module_dto = createSysModulesDto;
-      module_dto.module_url = slugify(createSysModulesDto.module_name);
-      const response = await this.sys_modules.create({
-        ...module_dto,
-        created_at: sequelize.fn('NOW'),
-        created_by: payload.sub,
-      });
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_modules' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canCreate = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Create',
+      },
+    });
+    if (!canCreate) throw new UnauthorizedException();
+    const module_dto = createSysModulesDto;
+    module_dto.module_url = slugify(createSysModulesDto.module_name);
+    const response = await this.sys_modules.create({
+      ...module_dto,
+      created_by: payload.sub,
+    });
+    return 'data added!';
   }
 
   async findAll(
@@ -66,64 +61,106 @@ export class SysModulesService {
       ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
       : { is_active: 1 };
     const { limit, offset } = this.helpers.getPagination(page, size);
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_modules' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canRead = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Read',
-        },
-      });
-      if (!canRead) throw new UnauthorizedException();
-      const data = await this.sys_modules.findAndCountAll({
-        order: [['id', 'DESC']],
-        include: [{ model: SysUserModule }, { model: SysMenus }],
-        where: condition,
-        limit,
-        offset,
-      });
 
-      const response = this.helpers.getPagingData(
-        data,
-        page,
-        limit,
-        'sys_modules',
-      );
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_modules' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canRead = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Read',
+      },
+    });
+    if (!canRead) throw new UnauthorizedException();
+    const data = await this.sys_modules.findAndCountAll({
+      order: [['id', 'DESC']],
+      attributes: {
+        exclude: [
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },
+      include: [
+        {
+          model: SysMenus,
+          attributes: {
+            exclude: [
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
+        },
+      ],
+      where: condition,
+      limit,
+      offset,
+    });
+
+    const response = this.helpers.getPagingData(
+      data,
+      page,
+      limit,
+      'sys_modules',
+    );
+    return response || {};
   }
 
   async findOne(id: number, payload: any) {
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_modules' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canRead = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Read',
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_modules' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canRead = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Read',
+      },
+    });
+    if (!canRead) throw new UnauthorizedException();
+    const response = await this.sys_modules.findOne({
+      attributes: {
+        exclude: [
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },
+      where: {
+        id,
+        is_active: 1,
+      },
+      include: [
+        //{ model: SysUserModule },
+        {
+          model: SysMenus,
+          attributes: {
+            exclude: [
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
         },
-      });
-      if (!canRead) throw new UnauthorizedException();
-      const response = await this.sys_modules.findOne({
-        where: {
-          id,
-          is_active: 1,
-        },
-        include: [{ model: SysUserModule }, { model: SysMenus }],
-      });
-      return response;
-    } catch (err) {
-      throw err;
-    }
+      ],
+    });
+    return response || {};
   }
 
   async update(
@@ -131,58 +168,50 @@ export class SysModulesService {
     updateSysModulesDto: UpdateSysModulesDto,
     payload: any,
   ) {
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_modules' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canUpdate = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Update',
-        },
-      });
-      if (!canUpdate) throw new UnauthorizedException();
-      const response = await this.sys_modules.update(
-        {
-          ...updateSysModulesDto,
-          updated_at: sequelize.fn('NOW'),
-          updated_by: payload.sub,
-        },
-        { where: { id }, returning: true },
-      );
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_modules' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canUpdate = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Update',
+      },
+    });
+    if (!canUpdate) throw new UnauthorizedException();
+    const response = await this.sys_modules.update(
+      {
+        ...updateSysModulesDto,
+        updated_at: sequelize.fn('NOW'),
+        updated_by: payload.sub,
+      },
+      { where: { id }, returning: true },
+    );
 
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    return 'data updated!';
   }
 
   async remove(id: number, payload: any) {
-    try {
-      const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: 'sys_modules' },
-      });
-      if (!thisTableInfo) throw new ForbiddenException();
-      const canDelete = await this.role_table.findOne({
-        where: {
-          role_id: payload.role,
-          table_id: thisTableInfo.id,
-          access_type: 'All' || 'Delete',
-        },
-      });
-      if (!canDelete) throw new UnauthorizedException();
-      const response = await this.sys_modules.update(
-        {
-          is_active: 0,
-          deleted_at: sequelize.fn('NOW'),
-        },
-        { where: { id } },
-      );
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_modules' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canDelete = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Delete',
+      },
+    });
+    if (!canDelete) throw new UnauthorizedException();
+    const response = await this.sys_modules.update(
+      {
+        is_active: 0,
+        deleted_at: sequelize.fn('NOW'),
+      },
+      { where: { id } },
+    );
+    return 'data removed!';
   }
 }

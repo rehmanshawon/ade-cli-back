@@ -17,30 +17,16 @@ export class SysUsersService {
     private helpers: HelpersService,
   ) {}
   async create(createSysUsersDto: CreateSysUsersDto): Promise<SysUsers> {
-    try {
-      const response = await this.sys_users.create({
-        ...createSysUsersDto,
-        created_at: sequelize.fn('NOW'),
-        created_by: null,
-      });
-      // return {
-      //   error: false,
-      //   statusCode: 201,
-      //   message: 'record created successfully!',
-      //   data: response,
-      // };
-      return response;
-    } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const response = await this.sys_users.create({
+      ...createSysUsersDto,
+    });
+    // return {
+    //   error: false,
+    //   statusCode: 201,
+    //   message: 'record created successfully!',
+    //   data: response,
+    // };
+    return response;
   }
 
   async findAll(page: number, size: number, field: string, search: string) {
@@ -51,6 +37,17 @@ export class SysUsersService {
 
     const data = await this.sys_users.findAndCountAll({
       order: [['id', 'DESC']],
+      attributes: {
+        exclude: [
+          'password',
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },
       include: [
         {
           model: SysRoles,
@@ -67,23 +64,12 @@ export class SysUsersService {
           },
         },
       ],
-      attributes: {
-        exclude: [
-          'password',
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },
       where: condition,
       limit,
       offset,
     });
     const response = this.helpers.getPagingData(data, page, limit, 'sys_users');
-    return response;
+    return response || {};
   }
 
   async findOne(id: number) {
@@ -163,60 +149,27 @@ export class SysUsersService {
   }
 
   async update(id: number, updateSysUsersDto: UpdateSysUsersDto, payload: any) {
-    try {
-      const response = await this.sys_users.update(
-        {
-          ...updateSysUsersDto,
-          updated_at: sequelize.fn('NOW'),
-          updated_by: payload.sub,
-        },
-        { where: { id }, returning: true },
-      );
+    const response = await this.sys_users.update(
+      {
+        ...updateSysUsersDto,
+        updated_at: sequelize.fn('NOW'),
+        updated_by: payload.sub,
+      },
+      { where: { id }, returning: true },
+    );
 
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Update success!',
-        data: response,
-      };
-    } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    return 'data updated!';
   }
 
   async remove(id: number) {
-    try {
-      const response = await this.sys_users.update(
-        {
-          is_active: 0,
-          deleted_at: sequelize.fn('NOW'),
-        },
-        { where: { id } },
-      );
-      return {
-        error: false,
-        statusCode: 200,
-        message: 'Delete success!',
-        data: response,
-      };
-    } catch (err) {
-      throw new HttpException(
-        {
-          error: true,
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: err.errors[0].message,
-          data: [],
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const response = await this.sys_users.update(
+      {
+        is_active: 0,
+        deleted_at: sequelize.fn('NOW'),
+      },
+      { where: { id } },
+    );
+
+    return 'data removed!';
   }
 }

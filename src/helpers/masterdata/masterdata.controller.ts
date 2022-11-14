@@ -49,6 +49,13 @@ export class MasterDataController {
     return 'table created successfully!';
   }
 
+  // @UseGuards(JwtAuthGuard)
+  // @Get()
+  // getProfile(@Request() req) {
+  //   console.log(req.user);
+  //   return req.user;
+  // }
+
   async addModelToSelf(table: MDCreateTableDto) {
     const modelToAdd = await this.helpers.capitalizeFirstLetter(
       table.tableName,
