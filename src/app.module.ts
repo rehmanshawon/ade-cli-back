@@ -56,7 +56,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
     SequelizeModule.forRoot({
       synchronize: true,
       autoLoadModels: true,
-      //sync: { alter: true},
+      sync: { alter: false },
       // logging: (m) => console.log(m),
       //logging:f
       dialect:
