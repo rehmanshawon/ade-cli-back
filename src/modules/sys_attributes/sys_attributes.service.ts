@@ -113,20 +113,21 @@ export class SysAttributesService {
         sys_table_id: id,
         is_active: 1,
       },
-      attributes: {
-        exclude: [
-          'id',
-          'primaryKey',
-          'foreignKey',
-          'sys_table_id',
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },
+      // attributes: {
+      //   exclude: [
+      //     'id',
+      //     'primaryKey',
+      //     'foreignKey',
+      //     'sys_table_id',
+      //     'is_active',
+      //     'created_at',
+      //     'created_by',
+      //     'updated_at',
+      //     'updated_by',
+      //     'deleted_at',
+      //   ],
+      // },
+      attributes: ['attribute_name', 'foreign_table_id'],
     });
     const foreignTableAttributes = [];
     const foreignTableIds = allAttributes
