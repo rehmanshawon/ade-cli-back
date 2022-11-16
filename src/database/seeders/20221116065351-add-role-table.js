@@ -15,60 +15,78 @@ module.exports = {
     */
    var dummyJSON = [];
    dummyJSON.push({
-    table_name: "sys_roles",
+    access_type: "All",   
+    role_id:1,
+    table_id:1,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_users",
+    access_type: "All",   
+    role_id:1,
+    table_id:2,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_tables",
+    access_type: "All",   
+    role_id:1,
+    table_id:3,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_menus",
+    access_type: "All",   
+    role_id:1,
+    table_id:4,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_modules",
+    access_type: "All",   
+    role_id:1,
+    table_id:5,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_role_table",
+    access_type: "All",   
+    role_id:1,
+    table_id:6,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_role_menu",
+    access_type: "All",   
+    role_id:1,
+    table_id:7,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_attributes",
+    access_type: "All",   
+    role_id:1,
+    table_id:8,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_user_module",
+    access_type: "All",   
+    role_id:1,
+    table_id:9,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
-   await queryInterface.bulkInsert('sys_tables',dummyJSON,{});
+   await queryInterface.bulkInsert('sys_role_table',dummyJSON,{});
   },
 
   async down (queryInterface, Sequelize) {
@@ -78,7 +96,6 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    await queryInterface.bulkDelete('sys_tables', null, {});
+    await queryInterface.bulkDelete('sys_role_table', null, {});
   }
-  
 };

@@ -15,60 +15,83 @@ module.exports = {
     */
    var dummyJSON = [];
    dummyJSON.push({
-    table_name: "sys_roles",
+    menu_name: "Admin Settings",
+    menu_url:"admin-settings",
+    menu_icon_url:"/static/media/Settings4.148e7895.svg",
+    menu_order:2,
+    parent_menu:0,
+    module_id:1,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_users",
+    menu_name: "Menus",
+    menu_url:"admin-settings/menu-list",
+    menu_icon_url:"/static/media/Settings4.148e7895.svg",
+    menu_order:1,
+    parent_menu:1,
+    module_id:1,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_tables",
+    menu_name: "Create Table",
+    menu_url:"admin-settings/create-table",
+    menu_icon_url:"",
+    menu_order:0,
+    parent_menu:1,
+    module_id:1,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_menus",
+    menu_name: "User Setting",
+    menu_url:"user-setting",
+    menu_icon_url:"",
+    menu_order:0,
+    parent_menu:5,
+    module_id:1,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_modules",
+    menu_name: "Users",
+    menu_url:"user-setting",
+    menu_icon_url:"/static/media/User.22ffc190.svg",
+    menu_order:1,
+    parent_menu:0,
+    module_id:1,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_role_table",
+    menu_name: "Dashboard",
+    menu_url:"dashboard",
+    menu_icon_url:"/static/media/Layout-arrange.0da0c8d5.svg",
+    menu_order:0,
+    parent_menu:0,
+    module_id:1,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
    dummyJSON.push({
-    table_name: "sys_role_menu",
+    menu_name: "Roles",
+    menu_url:"user-setting/roles",
+    menu_icon_url:"",
+    menu_order:1,
+    parent_menu:5,
+    module_id:1,
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date() 
    });
-   dummyJSON.push({
-    table_name: "sys_attributes",
-    created_by:1,    
-    created_at : new Date(),
-    updated_at : new Date() 
-   });
-   dummyJSON.push({
-    table_name: "sys_user_module",
-    created_by:1,    
-    created_at : new Date(),
-    updated_at : new Date() 
-   });
-   await queryInterface.bulkInsert('sys_tables',dummyJSON,{});
+   await queryInterface.bulkInsert('sys_menus',dummyJSON,{});
   },
 
   async down (queryInterface, Sequelize) {
@@ -78,7 +101,6 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    await queryInterface.bulkDelete('sys_tables', null, {});
+    await queryInterface.bulkDelete('sys_menus', null, {});
   }
-  
 };

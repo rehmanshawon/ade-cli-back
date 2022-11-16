@@ -13,8 +13,9 @@ module.exports = {
      *   isBetaMember: false
      * }], {});
     */
-   await queryInterface.bulkInsert('sys_roles',[{
-    role_name: "super-admin",    
+   await queryInterface.bulkInsert('sys_modules',[{
+    module_name: "Common Features",    
+    module_url: "common_features",   
     created_by:1,    
     created_at : new Date(),
     updated_at : new Date()
@@ -28,6 +29,6 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    await queryInterface.bulkDelete('sys_roles', null, {});
+    await queryInterface.bulkDelete('sys_modules', null, {});
   }
 };

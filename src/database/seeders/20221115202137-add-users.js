@@ -15,8 +15,8 @@ module.exports = {
      * }], {});
     */
    await queryInterface.bulkInsert('sys_users',[{
-    user_name: "Zohaib",    
-    email: "abc@def.com",
+    user_name: "super",    
+    email: "super@email.com",
     password:await bcrypt.hash('123456', 10),
     created_by:1,    
     created_at : new Date(),

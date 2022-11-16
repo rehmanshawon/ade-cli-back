@@ -13,12 +13,16 @@ module.exports = {
      *   isBetaMember: false
      * }], {});
     */
-   await queryInterface.bulkInsert('sys_roles',[{
-    role_name: "super-admin",    
+   var dummyJSON = [];
+   dummyJSON.push({
+    accessible: true,   
+    user_id:1,
+    module_id:1,
     created_by:1,    
     created_at : new Date(),
-    updated_at : new Date()
-  }],{});
+    updated_at : new Date() 
+   });
+   await queryInterface.bulkInsert('sys_user_module',dummyJSON,{});
   },
 
   async down (queryInterface, Sequelize) {
@@ -28,6 +32,6 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    await queryInterface.bulkDelete('sys_roles', null, {});
+    await queryInterface.bulkDelete('sys_user_module', null, {});
   }
 };
