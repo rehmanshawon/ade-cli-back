@@ -24,8 +24,8 @@ export class SysMastersController {
   @Post()
   create(@Body() createSysMastersDto: CreateSysMastersDto, @Request() req) {
     console.log(createSysMastersDto);
-    return createSysMastersDto;
-    // return this.sysMastersService.create(createSysMastersDto, req.user);
+    //return createSysMastersDto;
+    return this.sysMastersService.create(createSysMastersDto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
