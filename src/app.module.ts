@@ -1,4 +1,8 @@
 /* eslint-disable prettier/prettier */
+import { SysMastersModule } from 'src/modules/sys_masters/sys_masters.module';
+
+import {SysMasters} from 'src/modules/sys_masters/sys_masters.model';
+
 
 import { SysUserModuleModule } from 'src/modules/sys_user_module/sys_user_module.module';
 
@@ -56,7 +60,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
     SequelizeModule.forRoot({
       synchronize: true,
       autoLoadModels: true,
-      //sync: { alter: true},
+      sync: { alter: false },
       // logging: (m) => console.log(m),
       //logging:f
       dialect:
@@ -72,7 +76,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [
+      models: [SysMasters,
         SysUserModule,
         SysRoleMenu,
         SysMenus,
@@ -85,7 +89,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       ],
     }),
     AuthModule,
-    CreateTableModule,
+    CreateTableModule,SysMastersModule,
     MasterDataModule,
     SysUserModuleModule,
     SysRoleMenuModule,

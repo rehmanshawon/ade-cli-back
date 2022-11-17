@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import {
   Controller,
+  Param,
   Get,
   Request,
   Post,
@@ -15,6 +16,7 @@ import { Response } from 'express';
 import sequelize from 'sequelize';
 //import { databaseProviders } from 'src/database.provider';
 import { JwtAuthGuard } from 'src/modules/sys-auth/jwt-auth.guard';
+import { SysMenus } from 'src/modules/sys_menus/sys_menus.model';
 import { SysTables } from 'src/modules/sys_tables/sys_tables.model';
 import { HelpersService } from '../helpers/helpers.service';
 import { MDCreateTableDto } from './dto/md-create-table.dto';
@@ -27,6 +29,7 @@ export class MasterDataController {
     private masterDataService: MasterDataService,
     private helpers: HelpersService,
     @InjectModel(SysTables) private sysTables: typeof SysTables,
+    @InjectModel(SysMenus) private sys_menus: typeof SysMenus,
   ) {}
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -59,20 +62,23 @@ export class MasterDataController {
       .getQueryInterface()
       .showAllTables();
     return { tables: response } || {};
-    // this.sysTables.sequelize
-    //   .getQueryInterface()
-    //   .showAllTables()
-    //   .then((tableObj) => {
-    //     console.log('// Tables in database', '==========================');
-    //     console.log(tableObj);
-    //     return tableObj;
-    //   })
-    //   .catch((err) => {
-    //     console.log('showAllSchemas ERROR', err);
-    //     return err;
-    //   });
-    //console.log(req.user);
-    //return req.user;
+  }
+
+  @Get(':id')
+  async getTableData(@Param('id') id: string, @Request() req) {
+    const table = await this.sysTables.findOne({
+      where: {
+        id: +id,
+        is_active: true,
+      },
+    });
+    if (table.table_name === 'sys_menus') {
+      return await this[`${table.table_name}`].findAll();
+    }
+    const response = await this.sysTables.sequelize
+      .getQueryInterface()
+      .showAllTables();
+    return { tables: response } || {};
   }
 
   async addModelToSelf(table: MDCreateTableDto) {

@@ -8,10 +8,16 @@ import { SysAttributes } from 'src/modules/sys_attributes/sys_attributes.model';
 import { SysRoleTable } from 'src/modules/sys_role_table/sys_role_table.model';
 import { MasterDataController } from './masterdata.controller';
 import { MasterDataService } from './masterdata.service';
+import { SysMenus } from 'src/modules/sys_menus/sys_menus.model';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([SysTables, SysAttributes, SysRoleTable]),
+    SequelizeModule.forFeature([
+      SysTables,
+      SysAttributes,
+      SysRoleTable,
+      SysMenus,
+    ]),
     HelpersModule,
   ],
   providers: [MasterDataService],
