@@ -19,15 +19,12 @@ export class CreateSysMastersDto {
   @IsOptional()
   slug_type: string;
 
-  @IsString()
   @IsOptional()
   query_tables: tableList[];
 
-  @IsString()
   @IsOptional()
   create_form_params: string;
 
-  @IsString()
   @IsOptional()
   update_form_params: string;
 }
@@ -35,6 +32,7 @@ export class CreateSysMastersDto {
 class fieldDef {
   fieldName: string;
   columnName: string;
+  include: boolean;
 }
 
 class tableList {

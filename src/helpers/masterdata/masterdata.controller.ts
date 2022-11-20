@@ -65,7 +65,7 @@ export class MasterDataController {
   }
 
   @Get(':id')
-  async getTableData(@Param('id') id: string, @Request() req) {
+  async getMasterData(@Param('id') id: string, @Request() req) {
     const table = await this.sysTables.findOne({
       where: {
         id: +id,
