@@ -102,22 +102,27 @@ export class SysMenusService {
       attributes: ['menu_order'],
     });
 
-    await this.sys_menus.create({
+    const thisParent = await this.sys_menus.create({
       ...createSysMenusDto,
       menu_url: masterMenu,
       menu_order: parentMenus[0].menu_order + 1,
+      parent_menu: 0,
       created_by: payload.sub,
     });
     await this.sys_menus.create({
       ...createSysMenusDto,
+      menu_name: 'View',
       menu_url: gridMenuUrl,
       menu_order: 0,
+      parent_menu: thisParent.parent_menu,
       created_by: payload.sub,
     });
     await this.sys_menus.create({
       ...createSysMenusDto,
+      menu_name: 'Create',
       menu_url: createMenuUrl,
       menu_order: 1,
+      parent_menu: thisParent.parent_menu,
       created_by: payload.sub,
     });
 
