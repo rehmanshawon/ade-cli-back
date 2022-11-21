@@ -68,7 +68,7 @@ export class SysMastersService {
     // console.log(foreignAttributes);
     //const foreig
     //console.log(JSON.stringify(foreignTables[0].fieldList[0].));
-    const gridUrl = `/api/vi/${createSysMastersDto.query_tables[0].tableName}?attributes=${attributes}&includes=${foreignTables}&iattributes=${foreignAttributes}`;
+    const gridUrl = `/api/v1/${createSysMastersDto.query_tables[0].tableName}?attributes=${attributes}&includes=${foreignTables}&iattributes=${foreignAttributes}`;
 
     // const queryString = decodeURIComponent(gridUrl.replace(/\+/g, ' ')).split(
     //   '?',
