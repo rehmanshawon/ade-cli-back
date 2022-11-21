@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { SysRoleMenu } from 'src/modules/sys_role_menu/sys_role_menu.model';
+import slugify from 'slugify';
 
 import {
   ForbiddenException,
@@ -66,6 +67,60 @@ export class SysMenusService {
         created_by: payload.sub,
       });
     }
+    return `record added to sys_menus successfully!`;
+  }
+
+  async createMasterDataMenu(
+    createSysMenusDto: CreateSysMenusDto,
+    payload: any,
+  ) {
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_menus' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canCreate = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Create',
+      },
+    });
+    if (!canCreate) throw new UnauthorizedException();
+
+    const masterMenu = `${slugify(createSysMenusDto.menu_name)}/masterdata`;
+    const gridMenuUrl = `${slugify(
+      createSysMenusDto.menu_name,
+    )}/masterdata/view?slug_name=${createSysMenusDto.menu_url}&slug_type=grid`;
+    const createMenuUrl = `${slugify(
+      createSysMenusDto.menu_name,
+    )}/masterdata/create?slug_name=${
+      createSysMenusDto.menu_url
+    }&slug_type=form`;
+    const parentMenus = await this.sys_menus.findAll({
+      where: { parent_menu: 0 },
+      order: [['menu_order', 'DSC']],
+      attributes: ['menu_order'],
+    });
+
+    await this.sys_menus.create({
+      ...createSysMenusDto,
+      menu_url: masterMenu,
+      menu_order: parentMenus[0].menu_order + 1,
+      created_by: payload.sub,
+    });
+    await this.sys_menus.create({
+      ...createSysMenusDto,
+      menu_url: gridMenuUrl,
+      menu_order: 0,
+      created_by: payload.sub,
+    });
+    await this.sys_menus.create({
+      ...createSysMenusDto,
+      menu_url: createMenuUrl,
+      menu_order: 1,
+      created_by: payload.sub,
+    });
+
     return `record added to sys_menus successfully!`;
   }
 

@@ -34,4 +34,8 @@ export class CreateSysMenusDto {
   @IsNumber()
   @IsOptional()
   module_id: number;
+
+  @IsBoolean()
+  @IsOptional()
+  createMaster: boolean;
 }

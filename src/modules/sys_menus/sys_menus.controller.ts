@@ -24,6 +24,12 @@ export class SysMenusController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createSysMenusDto: CreateSysMenusDto, @Request() req) {
+    if (createSysMenusDto.createMaster) {
+      return this.sysMenusService.createMasterDataMenu(
+        createSysMenusDto,
+        req.user,
+      );
+    }
     return this.sysMenusService.create(createSysMenusDto, req.user);
   }
 
