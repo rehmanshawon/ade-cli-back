@@ -98,7 +98,7 @@ export class SysMenusService {
     }&slug_type=form`;
     const parentMenus = await this.sys_menus.findAll({
       where: { parent_menu: 0 },
-      order: [['menu_order', 'DSC']],
+      order: [['menu_order', 'DESC']],
       attributes: ['menu_order'],
     });
 
