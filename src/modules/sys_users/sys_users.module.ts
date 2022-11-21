@@ -5,6 +5,7 @@ import { HelpersModule } from 'src/helpers/helpers/helpers.module';
 import { SysUsersController } from './sys_users.controller';
 import { SysUsersService } from './sys_users.service';
 import { SysUsers } from './sys_users.model';
+import { SysRoles } from '../sys_roles/sys_roles.model';
 
 @Module({
   imports: [SequelizeModule.forFeature([SysUsers]), HelpersModule],

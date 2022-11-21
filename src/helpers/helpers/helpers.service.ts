@@ -169,4 +169,23 @@ export class HelpersService {
       })
       .concat(children.length ? this.getMembers(children) : children);
   };
+  flattenObject = (obj) => {
+    const flattened = {};
+
+    Object.keys(obj).forEach((key) => {
+      const value = obj[key];
+
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        Object.assign(flattened, this.flattenObject(value));
+      } else {
+        flattened[key] = value;
+      }
+    });
+
+    return flattened;
+  };
 }

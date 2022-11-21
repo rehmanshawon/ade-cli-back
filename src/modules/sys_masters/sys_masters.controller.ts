@@ -23,7 +23,7 @@ export class SysMastersController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createSysMastersDto: CreateSysMastersDto, @Request() req) {
-    console.log(createSysMastersDto);
+    //console.log(createSysMastersDto);
     //return createSysMastersDto;
     return this.sysMastersService.create(createSysMastersDto, req.user);
   }
@@ -46,6 +46,13 @@ export class SysMastersController {
   @Get(':id')
   findOne(@Param('id') id: string, @Request() req) {
     return this.sysMastersService.findOne(+id, req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  findBySlug(@Request() req) {
+    const { slug_name, slug_type } = req.query;
+    return this.sysMastersService.findBySlug(slug_name, slug_type, req.user);
   }
 
   @UseGuards(JwtAuthGuard)

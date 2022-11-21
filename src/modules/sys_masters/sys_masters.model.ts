@@ -35,6 +35,12 @@ export class SysMasters extends Model {
   grid_params?: string;
 
   @Column({ type: DataType.TEXT, unique: false })
+  grid_api?: string;
+
+  @Column({ type: DataType.TEXT, unique: false })
+  grid_columns?: string;
+
+  @Column({ type: DataType.TEXT, unique: false })
   create_form_params?: string;
 
   @Column({ type: DataType.TEXT, unique: false })
