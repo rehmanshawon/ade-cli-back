@@ -114,7 +114,7 @@ export class SysMenusService {
       menu_name: 'View',
       menu_url: gridMenuUrl,
       menu_order: 0,
-      parent_menu: thisParent.parent_menu,
+      parent_menu: thisParent.id,
       created_by: payload.sub,
     });
     await this.sys_menus.create({
@@ -122,7 +122,7 @@ export class SysMenusService {
       menu_name: 'Create',
       menu_url: createMenuUrl,
       menu_order: 1,
-      parent_menu: thisParent.parent_menu,
+      parent_menu: thisParent.id,
       created_by: payload.sub,
     });
 
