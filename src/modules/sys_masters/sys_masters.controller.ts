@@ -49,7 +49,7 @@ export class SysMastersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get()
+  @Get('api')
   findBySlug(@Request() req) {
     const { slug_name, slug_type } = req.query;
     return this.sysMastersService.findBySlug(slug_name, slug_type, req.user);
