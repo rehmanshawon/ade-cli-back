@@ -42,8 +42,8 @@ export class SysUsersService {
       ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
       : { is_active: 1 };
     const { limit, offset } = this.helpers.getPagination(page, size);
-    const modelIncludes = JSON.parse(includes);
-    const attributesInclude = JSON.parse(iattributes);
+    const modelIncludes = includes ? JSON.parse(includes) : [];
+    const attributesInclude = iattributes ? JSON.parse(iattributes) : [];
     // const strIncludes = [];
     // for (let i = 0; i < modelIncludes.length; i++) {
     //   strIncludes.push({
@@ -57,14 +57,19 @@ export class SysUsersService {
     //console.log(attributesInclude);
     const data = await this.sys_users.findAndCountAll({
       order: [['id', 'DESC']],
-      attributes: JSON.parse(attributes),
+      attributes: attributes
+        ? JSON.parse(attributes)
+        : ['id', 'user_name', 'email'],
       include: [
         {
           model: SysRoles,
-          attributes:
-            attributesInclude[
-              modelIncludes.indexOf(await this.helpers.toSnakeCase('SysRoles'))
-            ],
+          attributes: attributesInclude.length
+            ? attributesInclude[
+                modelIncludes.indexOf(
+                  await this.helpers.toSnakeCase('SysRoles'),
+                )
+              ]
+            : ['role_name'],
         },
       ],
       where: condition,
