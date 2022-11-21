@@ -517,16 +517,12 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
       serviceFileData += impModelString;
     }
     const arrayOfIncludes = association.map(
-      (m) => `{model:${m},attributes: {
-        exclude: [
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },}`,
+      (m) => `{model:${m},attributes: attributesInclude[
+              modelIncludes.indexOf(await this.helpers.toSnakeCase('${m}'))
+            ],}`,
+    );
+    const arrayOfIncludes2 = association.map(
+      (m) => `{model:${m},attributes:[],}`,
     );
     serviceFileData +=
       `@Injectable()
@@ -562,13 +558,23 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
           )} added!';        
   }
 
-    async findAll(page: number, size: number, field: string, search: string,payload: any) {
+    async findAll(
+      attributes: string,
+      includes: string,
+      iattributes: string,
+      page: number, 
+      size: number, 
+      field: string, 
+      search: string,
+      payload: any) {
       const condition = field
         ? { [field]: { [sequelize.Op.like]:` +
       '`%${search}%`' +
       ` }, is_active: 1 }
         : {is_active: 1};
-      const { limit, offset } = this.helpers.getPagination(page, size);      
+      const { limit, offset } = this.helpers.getPagination(page, size);
+      const modelIncludes = JSON.parse(includes);
+      const attributesInclude = JSON.parse(iattributes);      
         const thisTableInfo = await this.sysTables.findOne({
         where: { table_name: '${tableName}',is_active:true, },
       });
@@ -584,22 +590,17 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
       if (!canRead) throw new UnauthorizedException();
       const data = await this.${tableName}.findAndCountAll({        
         order: [['id', 'DESC']],
-        attributes: {
-        exclude: [
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },
+        attributes: JSON.parse(attributes),
         include: [${arrayOfIncludes}],
         where: condition,
         limit,
         offset,
       });
-      const response = this.helpers.getPagingData(data, page, limit,'${tableName}');
+      const count = data.count;
+      const plain = data.rows.map((m) =>
+      this.helpers.flattenObject(m.get({ plain: true })),
+    );
+      const response = this.helpers.getPagingData({ count: count, rows: plain }, page, limit,'${tableName}');
       return response || {};
     
   }
@@ -633,7 +634,7 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
           'deleted_at',
         ],
       },
-            include: [${arrayOfIncludes}],
+            include: [${arrayOfIncludes2}],
           });
           return response || {};
       
@@ -744,11 +745,11 @@ export class ${modelName}Controller {
     @UseGuards(JwtAuthGuard)
     @Get()
     async findAll(@Request() req) {
-      const { page, size, field, search } = req.query;
+      const { attributes,includes,iattributes, page, size, field, search } = req.query;
 
       return await this.${await this.helpers.uncapitalizeFirstLetter(
         modelName,
-      )}Service.findAll(page, size, field, search,req.user);
+      )}Service.findAll(attributes, includes, iattributes, page, size, field, search,req.user);
     }
 
     @UseGuards(JwtAuthGuard)

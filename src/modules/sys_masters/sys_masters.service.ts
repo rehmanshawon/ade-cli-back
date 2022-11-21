@@ -37,12 +37,57 @@ export class SysMastersService {
       },
     });
     if (!canCreate) throw new UnauthorizedException();
+    const tableAttributs = createSysMastersDto.query_tables[0].fieldList
+      .filter((field) => field.include === true)
+      .map((f) => f.fieldName);
 
+    const tableColumns = createSysMastersDto.query_tables.map((f) =>
+      f.fieldList
+        .filter((field) => field.include === true)
+        .map((f) => f.columnName),
+    );
+
+    const attributes = encodeURIComponent(JSON.stringify(tableAttributs));
+    const foreignTables = encodeURIComponent(
+      JSON.stringify(
+        createSysMastersDto.query_tables.slice(1).map((f) => f.tableName),
+      ),
+    );
+    //console.log(foreignTables);
+    const foreignAttributes = encodeURIComponent(
+      JSON.stringify(
+        createSysMastersDto.query_tables
+          .slice(1)
+          .map((f) =>
+            f.fieldList
+              .filter((item) => item.include === true)
+              .map((a) => a.fieldName),
+          ),
+      ),
+    );
+    // console.log(foreignAttributes);
+    //const foreig
+    //console.log(JSON.stringify(foreignTables[0].fieldList[0].));
+    const gridUrl = `/api/vi/${createSysMastersDto.query_tables[0].tableName}?attributes=${attributes}&includes=${foreignTables}&iattributes=${foreignAttributes}`;
+
+    // const queryString = decodeURIComponent(gridUrl.replace(/\+/g, ' ')).split(
+    //   '?',
+    // )[1];
+    // const urlParams = new URLSearchParams(queryString);
+
+    // console.log(
+    //   urlParams.get('attributes'),
+    //   urlParams.get('includes'),
+    //   urlParams.get('iattributes'),
+    // );
     const response = await this.sys_masters.create({
       ...createSysMastersDto,
       grid_params: JSON.stringify(createSysMastersDto.query_tables),
+      grid_api: gridUrl,
+      grid_columns: JSON.stringify(tableColumns),
       created_by: payload.sub,
     });
+    //return decodeURIComponent(gridUrl);
     return 'one sys_master added!';
   }
 
@@ -125,6 +170,32 @@ export class SysMastersService {
           'deleted_at',
         ],
       },
+      include: [],
+    });
+    return response || {};
+  }
+
+  async findBySlug(slug_name: string, slug_type: string, payload: any) {
+    const thisTableInfo = await this.sysTables.findOne({
+      where: { table_name: 'sys_masters,is_active:true,' },
+    });
+    if (!thisTableInfo) throw new ForbiddenException();
+    const canRead = await this.role_table.findOne({
+      where: {
+        role_id: payload.role,
+        table_id: thisTableInfo.id,
+        access_type: 'All' || 'Read',
+        is_active: true,
+      },
+    });
+    if (!canRead) throw new UnauthorizedException();
+    const response = await this.sys_masters.findOne({
+      where: {
+        slug_name,
+        slug_type,
+        is_active: 1,
+      },
+      attributes: [`'${slug_type}_api'`, `'${slug_type}_columns'`],
       include: [],
     });
     return response || {};

@@ -28,9 +28,18 @@ export class SysUsersController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Request() req) {
-    const { page, size, field, search } = req.query;
+    const { attributes, includes, iattributes, page, size, field, search } =
+      req.query;
 
-    return await this.sysUsersService.findAll(page, size, field, search);
+    return await this.sysUsersService.findAll(
+      attributes,
+      includes,
+      iattributes,
+      page,
+      size,
+      field,
+      search,
+    );
   }
 
   @UseGuards(JwtAuthGuard)

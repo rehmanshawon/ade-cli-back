@@ -29,46 +29,59 @@ export class SysUsersService {
     return response;
   }
 
-  async findAll(page: number, size: number, field: string, search: string) {
+  async findAll(
+    attributes: string,
+    includes: string,
+    iattributes: string,
+    page: number,
+    size: number,
+    field: string,
+    search: string,
+  ) {
     const condition = field
       ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
       : { is_active: 1 };
     const { limit, offset } = this.helpers.getPagination(page, size);
-
+    const modelIncludes = JSON.parse(includes);
+    const attributesInclude = JSON.parse(iattributes);
+    // const strIncludes = [];
+    // for (let i = 0; i < modelIncludes.length; i++) {
+    //   strIncludes.push({
+    //     model: `${eval(
+    //       await this.helpers.capitalizeFirstLetter(modelIncludes[i]),
+    //     )}`,
+    //     attributes: attributesInclude[i],
+    //   });
+    // }
+    //const wholeIncl
+    //console.log(attributesInclude);
     const data = await this.sys_users.findAndCountAll({
       order: [['id', 'DESC']],
-      attributes: {
-        exclude: [
-          'password',
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },
+      attributes: JSON.parse(attributes),
       include: [
         {
           model: SysRoles,
-          attributes: {
-            exclude: [
-              'id',
-              'is_active',
-              'created_at',
-              'created_by',
-              'updated_at',
-              'updated_by',
-              'deleted_at',
+          attributes:
+            attributesInclude[
+              modelIncludes.indexOf(await this.helpers.toSnakeCase('SysRoles'))
             ],
-          },
         },
       ],
       where: condition,
       limit,
       offset,
     });
-    const response = this.helpers.getPagingData(data, page, limit, 'sys_users');
+
+    const count = data.count;
+    const plain = data.rows.map((m) =>
+      this.helpers.flattenObject(m.get({ plain: true })),
+    );
+    const response = this.helpers.getPagingData(
+      { count: count, rows: plain },
+      page,
+      limit,
+      'sys_users',
+    );
     return response || {};
   }
 
