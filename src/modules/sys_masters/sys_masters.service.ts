@@ -80,9 +80,21 @@ export class SysMastersService {
     //   urlParams.get('includes'),
     //   urlParams.get('iattributes'),
     // );
+
+    const dto = createSysMastersDto.query_tables.map((m) => {
+      const tbname = m.tableName;
+      const fields = m.fieldList.map((f) => {
+        const c = f.columnName;
+        const i = f.include;
+        const n = m.tableName + '_' + f.fieldName;
+        return { columnName: c, fieldName: n, include: i };
+      });
+      return { tableName: tbname, fieldList: fields };
+    });
     const response = await this.sys_masters.create({
       ...createSysMastersDto,
-      grid_params: JSON.stringify(createSysMastersDto.query_tables),
+      //grid_params: JSON.stringify(createSysMastersDto.query_tables),
+      grid_params: JSON.stringify(dto),
       grid_api: gridUrl,
       grid_columns: JSON.stringify(tableColumns),
       created_by: payload.sub,

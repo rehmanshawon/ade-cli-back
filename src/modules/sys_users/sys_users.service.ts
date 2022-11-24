@@ -65,9 +65,7 @@ export class SysUsersService {
           model: SysRoles,
           attributes: attributesInclude.length
             ? attributesInclude[
-                modelIncludes.indexOf(
-                  await this.helpers.toSnakeCase('SysRoles'),
-                )
+                modelIncludes.indexOf(this.helpers.toSnakeCase('SysRoles'))
               ]
             : ['role_name'],
         },
@@ -79,7 +77,7 @@ export class SysUsersService {
 
     const count = data.count;
     const plain = data.rows.map((m) =>
-      this.helpers.flattenObject(m.get({ plain: true })),
+      this.helpers.flattenObject(m.get({ plain: true }), 'sys_users'),
     );
     const response = this.helpers.getPagingData(
       { count: count, rows: plain },
@@ -87,6 +85,7 @@ export class SysUsersService {
       limit,
       'sys_users',
     );
+    //const response = this.helpers.getPagingData(data, page, limit, 'sys_users');
     return response || {};
   }
 

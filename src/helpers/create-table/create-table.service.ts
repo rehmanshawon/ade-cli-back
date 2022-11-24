@@ -337,9 +337,9 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
     for (let i = 0; i < association.length; i++) {
       const impModelString = `import { ${
         association[i]
-      } } from 'src/modules/${await this.helpers.toSnakeCase(
+      } } from 'src/modules/${this.helpers.toSnakeCase(
         association[i],
-      )}/${await this.helpers.toSnakeCase(association[i])}.model';\n`;
+      )}/${this.helpers.toSnakeCase(association[i])}.model';\n`;
       serviceFileData += impModelString;
     }
     const arrayOfIncludes = association.map((m) => `{model:${m}}`);
@@ -619,14 +619,14 @@ export class ${modelName}Module {}
   }
 
   async updateAssociateService(associates: string[], modelName: string) {
-    const modelPath = `src/modules/${await this.helpers.toSnakeCase(
+    const modelPath = `src/modules/${this.helpers.toSnakeCase(
       modelName,
-    )}/${await this.helpers.toSnakeCase(modelName)}.model`;
+    )}/${this.helpers.toSnakeCase(modelName)}.model`;
     for (let i = 0; i < associates.length; i++) {
       // open the associate service file
-      const fileName = `src/modules/${await this.helpers.toSnakeCase(
+      const fileName = `src/modules/${this.helpers.toSnakeCase(
         associates[i],
-      )}/${await this.helpers.toSnakeCase(associates[i])}.service.ts`;
+      )}/${this.helpers.toSnakeCase(associates[i])}.service.ts`;
       const importString = `import {${modelName}} from '${modelPath}';\n`;
       const splitter = 'include: [';
 
@@ -1037,9 +1037,9 @@ export class ${modelName}Module {}
   async addModelToApp(tableName: string) {
     const modelToAdd = await this.helpers.capitalizeFirstLetter(tableName);
     const fileName = 'src/app.module.ts';
-    const modelPath = `src/modules/${await this.helpers.toSnakeCase(
+    const modelPath = `src/modules/${this.helpers.toSnakeCase(
       tableName,
-    )}/${await this.helpers.toSnakeCase(tableName)}.model`;
+    )}/${this.helpers.toSnakeCase(tableName)}.model`;
     const importString = `import {${modelToAdd}} from '${modelPath}';\n`;
     const splitter = 'models: [';
 

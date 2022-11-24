@@ -134,7 +134,7 @@ export class HelpersService {
     }
   }
 
-  async toSnakeCase(phrase: string) {
+  toSnakeCase(phrase: string) {
     return (
       phrase &&
       phrase
@@ -169,7 +169,7 @@ export class HelpersService {
       })
       .concat(children.length ? this.getMembers(children) : children);
   };
-  flattenObject = (obj) => {
+  flattenObject = (obj, parentKey = undefined) => {
     const flattened = {};
 
     Object.keys(obj).forEach((key) => {
@@ -180,7 +180,9 @@ export class HelpersService {
         value !== null &&
         !Array.isArray(value)
       ) {
-        Object.assign(flattened, this.flattenObject(value));
+        Object.assign(flattened, this.flattenObject(value, key));
+      } else if (parentKey) {
+        flattened[this.toSnakeCase(`${parentKey}_${key}`)] = value;
       } else {
         flattened[key] = value;
       }
@@ -188,4 +190,37 @@ export class HelpersService {
 
     return flattened;
   };
+
+  prefixEveryKeyOfObjectArray = (arr, prefixWord, prefixWith) => {
+    const newArray = [];
+
+    arr.forEach((obj) => {
+      const newObj = {};
+      const keys = Object.keys(obj);
+      keys.forEach((key) => {
+        Object.assign(newObj, { [prefixWord + prefixWith + key]: obj[key] });
+      });
+      newArray.push(newObj);
+    });
+
+    return newArray;
+  };
+
+  // prefixSpecificValueOfObjectArray(arr,keyValueToChange, prefixWord, prefixWith){
+  //   const newArray = [];
+
+  //   arr.forEach((obj) => {
+  //     const newObj = {};
+  //     const keys = Object.keys(obj);
+  //     keys.forEach((key) => {
+  //       if (key === keyValueToChange) {
+  //         Object.assign(newObj, { [key]: obj[oldKey] });
+  //       }
+  //       Object.assign(newObj, { [prefixWord + prefixWith + key]: obj[key] });
+  //     });
+  //     newArray.push(newObj);
+  //   });
+
+  //   return newArray;
+  // }
 }

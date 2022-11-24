@@ -86,9 +86,9 @@ export class MasterDataController {
       table.tableName,
     );
     const fileName = 'src/helpers/masterdata/masterdata.controller.ts';
-    const modelPath = `src/modules/${await this.helpers.toSnakeCase(
+    const modelPath = `src/modules/${this.helpers.toSnakeCase(
       table.tableName,
-    )}/${await this.helpers.toSnakeCase(table.tableName)}.model`;
+    )}/${this.helpers.toSnakeCase(table.tableName)}.model`;
     const importString = `import {${modelToAdd}} from '${modelPath}';\n`;
     const fileAllReadyImported = this.helpers.checkFileForAString(
       fileName,
