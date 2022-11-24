@@ -113,7 +113,7 @@ export class MasterDataService {
 \t${thisTableKey}?: ${fieldList[i].type};\n`;
           belongsToString += `
 \t@BelongsTo(() => ${foreignModel})
-\t${await this.helpers.returnSingularized(foreignModel)}?: ${foreignModel};\n`;
+\t${foreignModel}?: ${foreignModel};\n`;
           belongsTo.push(foreignModel); // for inclusion in sequelize crud service
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file
@@ -518,7 +518,7 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
     }
     const arrayOfIncludes = association.map(
       (m) => `{model:${m},attributes: attributesInclude[
-              modelIncludes.indexOf(await this.helpers.toSnakeCase('${m}'))
+              modelIncludes.indexOf(this.helpers.toSnakeCase('${m}'))
             ],}`,
     );
     const arrayOfIncludes2 = association.map(
