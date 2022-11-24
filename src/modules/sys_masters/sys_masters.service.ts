@@ -195,7 +195,11 @@ export class SysMastersService {
         slug_type: slug_type,
         is_active: 1,
       },
-      attributes: [`${slug_type}_api`, `${slug_type}_columns`],
+      attributes: [
+        `${slug_type}_params`,
+        `${slug_type}_api`,
+        `${slug_type}_columns`,
+      ],
       include: [],
     });
     return response || {};
