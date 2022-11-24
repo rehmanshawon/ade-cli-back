@@ -164,9 +164,7 @@ export class MasterDataService {
           // defing hasone association
           HasOneString += `
           @HasOne(() => ${thisModel})
-          ${await this.helpers.returnSingularized(
-            thisTable,
-          )}?: ${thisModel};\n`;
+          ${thisTable}?: ${thisModel};\n`;
           has.push(thisModel);
 
           const foreignModelFilePath = `src/modules/${foreignTable}/${foreignTable}.model.ts`;
