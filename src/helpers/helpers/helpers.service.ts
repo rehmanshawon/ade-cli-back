@@ -9,13 +9,13 @@ import * as fs from 'fs';
 export class HelpersService {
   getPagination = (page, size) => {
     const limit = size ? +size : 100;
-    const offset = page ? page * limit : 0;
+    const offset = page ? (page - 1) * limit : 0;
 
     return { limit, offset };
   };
   getPagingData = (data, page, limit, tableName) => {
     const { count: totalItems, rows: records } = data;
-    const currentPage = page ? +page : 0;
+    const currentPage = page ? +page : 1;
     const totalPages = Math.ceil(totalItems / limit);
 
     return { totalItems, [tableName]: records, totalPages, currentPage };
