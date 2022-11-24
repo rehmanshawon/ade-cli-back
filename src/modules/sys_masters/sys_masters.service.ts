@@ -86,7 +86,7 @@ export class SysMastersService {
       const fields = m.fieldList.map((f) => {
         const c = f.columnName;
         const i = f.include;
-        const n = m.tableName + '_' + f.fieldName;
+        const n = m.tableName + '__' + f.fieldName;
         return { columnName: c, fieldName: n, include: i };
       });
       return { tableName: tbname, fieldList: fields };
