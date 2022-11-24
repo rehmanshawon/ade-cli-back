@@ -143,7 +143,7 @@ export class SysMastersService {
 
   async findOne(id: number, payload: any) {
     const thisTableInfo = await this.sysTables.findOne({
-      where: { table_name: 'sys_masters,is_active:true,' },
+      where: { table_name: 'sys_masters', is_active: true },
     });
     if (!thisTableInfo) throw new ForbiddenException();
     const canRead = await this.role_table.findOne({
@@ -177,9 +177,9 @@ export class SysMastersService {
 
   async findBySlug(slug_name: string, slug_type: string, payload: any) {
     const thisTableInfo = await this.sysTables.findOne({
-      where: { table_name: 'sys_masters,is_active:true,' },
+      where: { table_name: 'sys_masters', is_active: true },
     });
-    if (!thisTableInfo) throw new ForbiddenException();
+    if (!thisTableInfo) throw new ForbiddenException('table not found');
     const canRead = await this.role_table.findOne({
       where: {
         role_id: payload.role,
@@ -191,14 +191,15 @@ export class SysMastersService {
     if (!canRead) throw new UnauthorizedException();
     const response = await this.sys_masters.findOne({
       where: {
-        slug_name,
-        slug_type,
+        slug_name: slug_name,
+        slug_type: slug_type,
         is_active: 1,
       },
-      attributes: [`'${slug_type}_api'`, `'${slug_type}_columns'`],
+      attributes: [`${slug_type}_api`, `${slug_type}_columns`],
       include: [],
     });
     return response || {};
+    //return {};
   }
 
   async update(
