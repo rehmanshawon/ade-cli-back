@@ -38,6 +38,8 @@ export class SysUsersService {
     field: string,
     search: string,
   ) {
+    // const onlyFieldName=field.split('_').slice(1).join();
+    // console
     const condition = field
       ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
       : { is_active: 1 };
