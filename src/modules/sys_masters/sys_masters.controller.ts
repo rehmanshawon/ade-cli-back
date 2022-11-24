@@ -31,8 +31,15 @@ export class SysMastersController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Request() req) {
-    const { page, size, field, search } = req.query;
-
+    const { slug_name, slug_type, page, size, field, search } = req.query;
+    if (slug_name && slug_type) {
+      return await this.sysMastersService.findBySlug(
+        slug_name,
+        slug_type,
+        req.user,
+      );
+    }
+    console.log('shawon');
     return await this.sysMastersService.findAll(
       page,
       size,
@@ -45,16 +52,34 @@ export class SysMastersController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Request() req) {
+    console.log('shawon');
     return this.sysMastersService.findOne(+id, req.user);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('api')
-  findBySlug(@Request() req) {
-    const { slug_name, slug_type } = req.query;
-    return this.sysMastersService.findBySlug(slug_name, slug_type, req.user);
-  }
+  //@UseGuards(JwtAuthGuard)
+  // @Get('view_api')
+  // async findBySlug(@Request() req) {
+  //   const { slug_name, slug_type } = req.query;
+  //   console.log(slug_name);
+  //   return 'hello';
+  //   // return await this.sysMastersService.findBySlug(
+  //   //   slug_name,
+  //   //   slug_type,
+  //   //   req.user,
+  //   // );
+  // }
 
+  // @Get('grid')
+  // shawon(@Request() req) {
+  //   // const { slug_name, slug_type } = req.query;
+  //   console.log(',');
+  //   return 'hello';
+  //   // return await this.sysMastersService.findBySlug(
+  //   //   slug_name,
+  //   //   slug_type,
+  //   //   req.user,
+  //   // );
+  // }
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
