@@ -1,19 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { CustomersModule } from 'src/modules/customers/customers.module';
-
-import {Customers} from 'src/modules/customers/customers.model';
-
-import { HomesModule } from 'src/modules/homes/homes.module';
-
-import {Homes} from 'src/modules/homes/homes.model';
-
-import { EmployeesModule } from 'src/modules/employees/employees.module';
-
-import {Employees} from 'src/modules/employees/employees.model';
-
-import { FarmsModule } from 'src/modules/farms/farms.module';
-
-import {Farms} from 'src/modules/farms/farms.model';
 
 import { SysMastersModule } from 'src/modules/sys_masters/sys_masters.module';
 
@@ -91,7 +76,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [Customers,Homes,Employees,Farms,
+      models: [
         SysMasters,
         SysUserModule,
         SysRoleMenu,
@@ -105,7 +90,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       ],
     }),
     AuthModule,
-    CreateTableModule,CustomersModule,HomesModule,EmployeesModule,FarmsModule,
+    CreateTableModule,
     SysMastersModule,
     MasterDataModule,
     SysUserModuleModule,
