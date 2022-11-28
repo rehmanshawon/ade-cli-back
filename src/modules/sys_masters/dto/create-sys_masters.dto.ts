@@ -34,6 +34,7 @@ class fieldDef {
   columnName: string;
   fieldType: string;
   foreignKey: string;
+  foreign_table_id: number;
   include: boolean;
 }
 
