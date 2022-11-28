@@ -32,19 +32,28 @@ export class SysMasters extends Model {
   slug_type?: string;
 
   @Column({ type: DataType.TEXT, unique: false })
+  grid_columns?: string;
+
+  @Column({ type: DataType.TEXT, unique: false })
   grid_params?: string;
+
+  @Column({ type: DataType.TEXT, unique: false })
+  create_params?: string;
+
+  @Column({ type: DataType.TEXT, unique: false })
+  update_params?: string;
 
   @Column({ type: DataType.TEXT, unique: false })
   grid_api?: string;
 
   @Column({ type: DataType.TEXT, unique: false })
-  grid_columns?: string;
+  create_api?: string;
 
   @Column({ type: DataType.TEXT, unique: false })
-  create_form_params?: string;
+  update_api?: string;
 
   @Column({ type: DataType.TEXT, unique: false })
-  update_form_params?: string;
+  delete_api?: string;
 
   @Column({
     type: DataType.BOOLEAN,

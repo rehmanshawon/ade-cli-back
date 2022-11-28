@@ -113,21 +113,12 @@ export class SysAttributesService {
         sys_table_id: id,
         is_active: 1,
       },
-      // attributes: {
-      //   exclude: [
-      //     'id',
-      //     'primaryKey',
-      //     'foreignKey',
-      //     'sys_table_id',
-      //     'is_active',
-      //     'created_at',
-      //     'created_by',
-      //     'updated_at',
-      //     'updated_by',
-      //     'deleted_at',
-      //   ],
-      // },
-      attributes: ['attribute_name', 'foreign_table_id'],
+      attributes: [
+        'attribute_name',
+        'attribute_type',
+        'foreignKey',
+        'foreign_table_id',
+      ],
     });
     const foreignTableAttributes = [];
     const foreignTableIds = allAttributes
@@ -140,9 +131,7 @@ export class SysAttributesService {
           id: foreignTableIds[i].foreign_table_id,
           is_active: 1,
         },
-        attributes: {
-          include: ['id', 'table_name'],
-        },
+        attributes: ['id', 'table_name'],
       });
       const tableFAttributes = await this.sys_attributes.findAll({
         where: {

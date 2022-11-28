@@ -69,6 +69,7 @@ export class SysMastersService {
     //const foreig
     //console.log(JSON.stringify(foreignTables[0].fieldList[0].));
     const gridUrl = `/api/v1/${createSysMastersDto.query_tables[0].tableName}?attributes=${attributes}&includes=${foreignTables}&iattributes=${foreignAttributes}`;
+    const createUrl = `/api/v1/${createSysMastersDto.query_tables[0].tableName}`;
 
     // const queryString = decodeURIComponent(gridUrl.replace(/\+/g, ' ')).split(
     //   '?',
@@ -91,16 +92,22 @@ export class SysMastersService {
       });
       return { tableName: tbname, fieldList: fields };
     });
+
+    const createParams = createSysMastersDto.query_tables.map((m) => {
+      //m.fieldList[0].
+    });
     const response = await this.sys_masters.create({
       ...createSysMastersDto,
       //grid_params: JSON.stringify(createSysMastersDto.query_tables),
       grid_params: JSON.stringify(dto),
       grid_api: gridUrl,
+      create_api: createUrl,
       grid_columns: JSON.stringify(tableColumns),
       created_by: payload.sub,
     });
     //return decodeURIComponent(gridUrl);
-    return 'one sys_master added!';
+    //return 'one sys_master added!';
+    return dto;
   }
 
   async findAll(
