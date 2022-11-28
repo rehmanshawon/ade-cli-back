@@ -182,7 +182,7 @@ export class HelpersService {
       ) {
         Object.assign(flattened, this.flattenObject(value, key));
       } else if (parentKey) {
-        flattened[this.toSnakeCase(`${parentKey}_${key}`)] = value;
+        flattened[this.toSnakeCase(`${parentKey}__${key}`)] = value;
       } else {
         flattened[key] = value;
       }

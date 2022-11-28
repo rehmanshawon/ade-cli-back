@@ -23,8 +23,6 @@ export class SysMastersController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createSysMastersDto: CreateSysMastersDto, @Request() req) {
-    //console.log(createSysMastersDto);
-    //return createSysMastersDto;
     return this.sysMastersService.create(createSysMastersDto, req.user);
   }
 
@@ -56,30 +54,6 @@ export class SysMastersController {
     return this.sysMastersService.findOne(+id, req.user);
   }
 
-  //@UseGuards(JwtAuthGuard)
-  // @Get('view_api')
-  // async findBySlug(@Request() req) {
-  //   const { slug_name, slug_type } = req.query;
-  //   console.log(slug_name);
-  //   return 'hello';
-  //   // return await this.sysMastersService.findBySlug(
-  //   //   slug_name,
-  //   //   slug_type,
-  //   //   req.user,
-  //   // );
-  // }
-
-  // @Get('grid')
-  // shawon(@Request() req) {
-  //   // const { slug_name, slug_type } = req.query;
-  //   console.log(',');
-  //   return 'hello';
-  //   // return await this.sysMastersService.findBySlug(
-  //   //   slug_name,
-  //   //   slug_type,
-  //   //   req.user,
-  //   // );
-  // }
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
