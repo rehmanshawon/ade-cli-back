@@ -130,19 +130,24 @@ export class SysMastersService {
     }
 
     // console.log(paramsArray);
+    await this.sys_masters.create({
+      ...createSysMastersDto,
+      grid_params: JSON.stringify(dto),
+      grid_api: gridUrl,
+      grid_columns: JSON.stringify(tableColumns),
+      created_by: payload.sub,
+    });
     const response = await this.sys_masters.create({
       ...createSysMastersDto,
-      //grid_params: JSON.stringify(createSysMastersDto.query_tables),
-      grid_params: JSON.stringify(dto),
+      slug_type: 'create',
       create_params: JSON.stringify(paramsArray),
-      grid_api: gridUrl,
       create_api: createUrl,
       grid_columns: JSON.stringify(tableColumns),
       created_by: payload.sub,
     });
     //return decodeURIComponent(gridUrl);
-    //return 'one sys_master added!';
-    return paramsArray;
+    return 'two records added!';
+    //return paramsArray;
   }
 
   async findAll(
@@ -249,11 +254,7 @@ export class SysMastersService {
         slug_type: slug_type,
         is_active: 1,
       },
-      attributes: [
-        `${slug_type}_params`,
-        `${slug_type}_api`,
-        `${slug_type}_columns`,
-      ],
+      attributes: [`${slug_type}_params`, `${slug_type}_api`, 'grid_columns'],
       include: [],
     });
     return response || {};

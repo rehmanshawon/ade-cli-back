@@ -25,7 +25,7 @@ export class SysMasters extends Model {
   @Index({ name: 'PRIMARY', using: 'BTREE', order: 'ASC', unique: true })
   id?: number;
 
-  @Column({ type: DataType.STRING, unique: true })
+  @Column({ type: DataType.STRING, unique: false })
   slug_name!: string;
 
   @Column({ type: DataType.STRING, unique: false })
