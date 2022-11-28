@@ -23,15 +23,17 @@ export class CreateSysMastersDto {
   query_tables: tableList[];
 
   @IsOptional()
-  create_form_params: string;
+  create_params: string;
 
   @IsOptional()
-  update_form_params: string;
+  update_params: string;
 }
 
 class fieldDef {
   fieldName: string;
   columnName: string;
+  fieldType: string;
+  foreignKey: string;
   include: boolean;
 }
 
