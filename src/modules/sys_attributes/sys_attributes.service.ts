@@ -165,7 +165,7 @@ export class SysAttributesService {
         .map((m) => m.get({ plain: true }))
         .map((m) =>
           Object.keys(m)
-            .filter((key) => key !== 'foreign_table_id')
+            // .filter((key) => key !== 'foreign_table_id')
             .reduce((obj, key) => {
               obj[key] = m[key];
               return obj;

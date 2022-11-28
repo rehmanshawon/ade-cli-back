@@ -93,7 +93,19 @@ export class SysMastersService {
       return { tableName: tbname, fieldList: fields };
     });
 
-    const createParams = createSysMastersDto.query_tables.map((m) => {
+    const createParams = createSysMastersDto.query_tables.map((m, i) => {
+      const paramsArray = [];
+      if (i === 0) {
+        for (let n = 0; n < m.fieldList.length; n++) {
+          const fieldDef = {
+            fieldName: m.fieldList[n].fieldName,
+            fieldType: m.fieldList[n].fieldType,
+            fieldLabel: m.fieldList[n].columnName,
+            foreignKey: m.fieldList[n].foreignKey,
+            fieldApi: m.fieldList[n].foreignKey,
+          };
+        }
+      }
       //m.fieldList[0].
     });
     const response = await this.sys_masters.create({
