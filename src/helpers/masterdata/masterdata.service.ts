@@ -142,9 +142,7 @@ export class MasterDataService {
           // now define the belongs to assosiation
           belongsToString += `
           @BelongsTo(() => ${foreignModel})
-          ${await this.helpers.returnSingularized(
-            foreignModel,
-          )}?: ${foreignModel};\n`;
+          ${foreignModel}?: ${foreignModel};\n`;
           belongsTo.push(foreignModel);
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file

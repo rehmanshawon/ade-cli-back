@@ -7,26 +7,25 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
-import { Employees } from './employees.model';
-import { CreateEmployeesDto } from './dto/create-employees.dto';
-import { UpdateEmployeesDto } from './dto/update-employees.dto';
+import { Faltu } from './faltu.model';
+import { CreateFaltuDto } from './dto/create-faltu.dto';
+import { UpdateFaltuDto } from './dto/update-faltu.dto';
 import { SysTables } from '../sys_tables/sys_tables.model';
 import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
-import { Farms } from 'src/modules/farms/farms.model';
 @Injectable()
-export class EmployeesService {
+export class FaltuService {
   constructor(
-    @InjectModel(Employees)
-    private employees: typeof Employees,
+    @InjectModel(Faltu)
+    private faltu: typeof Faltu,
     @InjectModel(SysRoleTable)
     private role_table: typeof SysRoleTable,
     @InjectModel(SysTables)
     private sysTables: typeof SysTables,
     private helpers: HelpersService,
   ) {}
-  async create(createEmployeesDto: CreateEmployeesDto, payload: any) {
+  async create(createFaltuDto: CreateFaltuDto, payload: any) {
     const thisTableInfo = await this.sysTables.findOne({
-      where: { table_name: 'employees', is_active: true },
+      where: { table_name: 'faltu', is_active: true },
     });
     if (!thisTableInfo) throw new ForbiddenException();
     const canCreate = await this.role_table.findOne({
@@ -38,11 +37,11 @@ export class EmployeesService {
       },
     });
     if (!canCreate) throw new UnauthorizedException();
-    const response = await this.employees.create({
-      ...createEmployeesDto,
+    const response = await this.faltu.create({
+      ...createFaltuDto,
       created_by: payload.sub,
     });
-    return 'one employee added!';
+    return 'one faltu added!';
   }
 
   async findAll(
@@ -59,10 +58,10 @@ export class EmployeesService {
       ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
       : { is_active: 1 };
     const { limit, offset } = this.helpers.getPagination(page, size);
-    const modelIncludes = JSON.parse(includes);
-    const attributesInclude = JSON.parse(iattributes);
+    //const modelIncludes = JSON.parse(includes);
+    // const attributesInclude = JSON.parse(iattributes);
     const thisTableInfo = await this.sysTables.findOne({
-      where: { table_name: 'employees', is_active: true },
+      where: { table_name: 'faltu', is_active: true },
     });
     if (!thisTableInfo) throw new ForbiddenException();
     const canRead = await this.role_table.findOne({
@@ -74,38 +73,30 @@ export class EmployeesService {
       },
     });
     if (!canRead) throw new UnauthorizedException();
-    const data = await this.employees.findAndCountAll({
+    const data = await this.faltu.findAndCountAll({
       order: [['id', 'DESC']],
-      attributes: JSON.parse(attributes),
-      include: [
-        {
-          model: Farms,
-          attributes:
-            attributesInclude[
-              modelIncludes.indexOf(this.helpers.toSnakeCase('Farms'))
-            ],
-        },
-      ],
+      // attributes: JSON.parse(attributes) || [],
+      // include: [],
       where: condition,
       limit,
       offset,
     });
     const count = data.count;
     const plain = data.rows.map((m) =>
-      this.helpers.flattenObject(m.get({ plain: true }), 'shawon'),
+      this.helpers.flattenObject(m.get({ plain: true }), 'faltu'),
     );
     const response = this.helpers.getPagingData(
       { count: count, rows: plain },
       page,
       limit,
-      'employees',
+      'faltu',
     );
     return response || {};
   }
 
   async findOne(id: number, payload: any) {
     const thisTableInfo = await this.sysTables.findOne({
-      where: { table_name: 'employees,is_active:true,' },
+      where: { table_name: 'faltu,is_active:true,' },
     });
     if (!thisTableInfo) throw new ForbiddenException();
     const canRead = await this.role_table.findOne({
@@ -117,7 +108,7 @@ export class EmployeesService {
       },
     });
     if (!canRead) throw new UnauthorizedException();
-    const response = await this.employees.findOne({
+    const response = await this.faltu.findOne({
       where: {
         id,
         is_active: 1,
@@ -132,18 +123,14 @@ export class EmployeesService {
           'deleted_at',
         ],
       },
-      include: [{ model: Farms, attributes: [] }],
+      include: [],
     });
     return response || {};
   }
 
-  async update(
-    id: number,
-    updateEmployeesDto: UpdateEmployeesDto,
-    payload: any,
-  ) {
+  async update(id: number, updateFaltuDto: UpdateFaltuDto, payload: any) {
     const thisTableInfo = await this.sysTables.findOne({
-      where: { table_name: 'employees', is_active: true },
+      where: { table_name: 'faltu', is_active: true },
     });
     if (!thisTableInfo) throw new ForbiddenException();
     const canUpdate = await this.role_table.findOne({
@@ -155,21 +142,21 @@ export class EmployeesService {
       },
     });
     if (!canUpdate) throw new UnauthorizedException();
-    const response = await this.employees.update(
+    const response = await this.faltu.update(
       {
-        ...updateEmployeesDto,
+        ...updateFaltuDto,
         updated_at: sequelize.fn('NOW'),
         updated_by: payload.sub,
       },
       { where: { id }, returning: true },
     );
 
-    return 'employees updated!';
+    return 'faltu updated!';
   }
 
   async remove(id: number, payload: any) {
     const thisTableInfo = await this.sysTables.findOne({
-      where: { table_name: 'employees', is_active: true },
+      where: { table_name: 'faltu', is_active: true },
     });
     if (!thisTableInfo) throw new ForbiddenException();
     const canDelete = await this.role_table.findOne({
@@ -181,13 +168,13 @@ export class EmployeesService {
       },
     });
     if (!canDelete) throw new UnauthorizedException();
-    const response = await this.employees.update(
+    const response = await this.faltu.update(
       {
         is_active: 0,
         deleted_at: sequelize.fn('NOW'),
       },
       { where: { id } },
     );
-    return 'one record deleted from employees!';
+    return 'one record deleted from faltu!';
   }
 }
