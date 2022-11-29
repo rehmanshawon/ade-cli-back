@@ -142,9 +142,7 @@ export class MasterDataService {
           // now define the belongs to assosiation
           belongsToString += `
           @BelongsTo(() => ${foreignModel})
-          ${await this.helpers.returnSingularized(
-            foreignModel,
-          )}?: ${foreignModel};\n`;
+          ${foreignModel}?: ${foreignModel};\n`;
           belongsTo.push(foreignModel);
           // we now have to modify the foreign table also to reflect the association with this table
           // first import this table to foreign model file
@@ -588,7 +586,7 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
       if (!canRead) throw new UnauthorizedException();
       const data = await this.${tableName}.findAndCountAll({        
         order: [['id', 'DESC']],
-        attributes: JSON.parse(attributes),
+        attributes: attributes ? JSON.parse(attributes) : null,
         include: [${arrayOfIncludes}],
         where: condition,
         limit,
