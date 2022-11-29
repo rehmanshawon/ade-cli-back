@@ -45,8 +45,8 @@ export class SysUsersService {
       ? { [field]: { [sequelize.Op.like]: `%${search}%` }, is_active: 1 }
       : { is_active: 1 };
     const { limit, offset } = this.helpers.getPagination(page, size);
-    const modelIncludes = includes ? JSON.parse(includes) : [];
-    const attributesInclude = iattributes ? JSON.parse(iattributes) : [];
+    const modelIncludes = includes ? JSON.parse(includes) : null;
+    const attributesInclude = iattributes ? JSON.parse(iattributes) : null;
     const data = await this.sys_users.findAndCountAll({
       order: [['id', 'DESC']],
       attributes: attributes

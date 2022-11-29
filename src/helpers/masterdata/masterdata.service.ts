@@ -570,8 +570,8 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
       ` }, is_active: 1 }
         : {is_active: 1};
       const { limit, offset } = this.helpers.getPagination(page, size);
-      const modelIncludes = JSON.parse(includes);
-      const attributesInclude = JSON.parse(iattributes);      
+      const modelIncludes = includes ? JSON.parse(includes) : null;
+    const attributesInclude = iattributes ? JSON.parse(iattributes) : null;    
         const thisTableInfo = await this.sysTables.findOne({
         where: { table_name: '${tableName}',is_active:true, },
       });
