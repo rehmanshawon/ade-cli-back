@@ -95,7 +95,7 @@ export class SysMenusService {
       createSysMenusDto.menu_name,
     )}/masterdata/create?slug_name=${
       createSysMenusDto.menu_url
-    }&slug_type=form`;
+    }&slug_type=create`;
     const parentMenus = await this.sys_menus.findAll({
       where: { parent_menu: 0 },
       order: [['menu_order', 'DESC']],

@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-
 import { SysMastersModule } from 'src/modules/sys_masters/sys_masters.module';
 
 import { SysMasters } from 'src/modules/sys_masters/sys_masters.model';
