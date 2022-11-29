@@ -513,9 +513,9 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
       serviceFileData += impModelString;
     }
     const arrayOfIncludes = association.map(
-      (m) => `{model:${m},attributes: attributesInclude[
+      (m) => `{model:${m},attributes:attributesInclude? attributesInclude[
               modelIncludes.indexOf(this.helpers.toSnakeCase('${m}'))
-            ],}`,
+            ]:[],}`,
     );
     const arrayOfIncludes2 = association.map(
       (m) => `{model:${m},attributes:[],}`,
