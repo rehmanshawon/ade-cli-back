@@ -1,4 +1,12 @@
 /* eslint-disable prettier/prettier */
+import { BlogModule } from 'src/modules/blog/blog.module';
+
+import {Blog} from 'src/modules/blog/blog.model';
+
+import { WriterModule } from 'src/modules/writer/writer.module';
+
+import {Writer} from 'src/modules/writer/writer.model';
+
 import { SysMastersModule } from 'src/modules/sys_masters/sys_masters.module';
 
 import { SysMasters } from 'src/modules/sys_masters/sys_masters.model';
@@ -75,7 +83,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [
+      models: [Blog,Writer,
         SysMasters,
         SysUserModule,
         SysRoleMenu,
@@ -89,7 +97,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       ],
     }),
     AuthModule,
-    CreateTableModule,
+    CreateTableModule,BlogModule,WriterModule,
     SysMastersModule,
     MasterDataModule,
     SysUserModuleModule,
