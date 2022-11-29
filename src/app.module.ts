@@ -1,23 +1,21 @@
 /* eslint-disable prettier/prettier */
-import { FaltuModule } from 'src/modules/faltu/faltu.module';
-
-import {Faltu} from 'src/modules/faltu/faltu.model';
+import { Faltu } from 'src/modules/faltu/faltu.model';
 
 import { CustomersModule } from 'src/modules/customers/customers.module';
 
-import {Customers} from 'src/modules/customers/customers.model';
+import { Customers } from 'src/modules/customers/customers.model';
 
 import { HomesModule } from 'src/modules/homes/homes.module';
 
-import {Homes} from 'src/modules/homes/homes.model';
+import { Homes } from 'src/modules/homes/homes.model';
 
 import { EmployeesModule } from 'src/modules/employees/employees.module';
 
-import {Employees} from 'src/modules/employees/employees.model';
+import { Employees } from 'src/modules/employees/employees.model';
 
 import { FarmsModule } from 'src/modules/farms/farms.module';
 
-import {Farms} from 'src/modules/farms/farms.model';
+import { Farms } from 'src/modules/farms/farms.model';
 
 import { SysMastersModule } from 'src/modules/sys_masters/sys_masters.module';
 
@@ -95,7 +93,12 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [Faltu,Customers,Homes,Employees,Farms,
+      models: [
+        Faltu,
+        Customers,
+        Homes,
+        Employees,
+        Farms,
         SysMasters,
         SysUserModule,
         SysRoleMenu,
@@ -109,7 +112,11 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       ],
     }),
     AuthModule,
-    CreateTableModule,FaltuModule,CustomersModule,HomesModule,EmployeesModule,FarmsModule,
+    CreateTableModule,
+    CustomersModule,
+    HomesModule,
+    EmployeesModule,
+    FarmsModule,
     SysMastersModule,
     MasterDataModule,
     SysUserModuleModule,

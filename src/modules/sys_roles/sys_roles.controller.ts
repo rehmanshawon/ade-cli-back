@@ -29,9 +29,22 @@ export class SysRolesController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Request() req) {
-    const { page, size, field, search } = req.query;
+    const {
+      attributes,
+      includes,
+      iattributes,
+      isDropDown,
+      page,
+      size,
+      field,
+      search,
+    } = req.query;
 
     return await this.sysRolesService.findAll(
+      attributes,
+      includes,
+      iattributes,
+      isDropDown,
       page,
       size,
       field,

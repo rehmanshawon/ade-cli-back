@@ -33,6 +33,7 @@ export class SysUsersService {
     attributes: string,
     includes: string,
     iattributes: string,
+    isDropDown,
     page: number,
     size: number,
     field: string,
@@ -46,17 +47,6 @@ export class SysUsersService {
     const { limit, offset } = this.helpers.getPagination(page, size);
     const modelIncludes = includes ? JSON.parse(includes) : [];
     const attributesInclude = iattributes ? JSON.parse(iattributes) : [];
-    // const strIncludes = [];
-    // for (let i = 0; i < modelIncludes.length; i++) {
-    //   strIncludes.push({
-    //     model: `${eval(
-    //       await this.helpers.capitalizeFirstLetter(modelIncludes[i]),
-    //     )}`,
-    //     attributes: attributesInclude[i],
-    //   });
-    // }
-    //const wholeIncl
-    //console.log(attributesInclude);
     const data = await this.sys_users.findAndCountAll({
       order: [['id', 'DESC']],
       attributes: attributes
@@ -82,7 +72,16 @@ export class SysUsersService {
       this.helpers.flattenObject(m.get({ plain: true }), 'sys_users'),
     );
     const response = this.helpers.getPagingData(
-      { count: count, rows: plain },
+      isDropDown
+        ? {
+            count: data.count,
+            rows: this.helpers.changeSpecificKeyOfObjectArray(
+              data.rows.map((m) => m.get({ plain: true })),
+              JSON.parse(attributes)[1],
+              'label',
+            ),
+          }
+        : { count: count, rows: plain },
       page,
       limit,
       'sys_users',

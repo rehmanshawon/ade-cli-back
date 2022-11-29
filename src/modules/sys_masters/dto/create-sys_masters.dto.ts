@@ -40,5 +40,10 @@ class fieldDef {
 
 class tableList {
   tableName: string;
+
+  @IsString()
+  @IsOptional()
+  dropdownField: string;
+
   fieldList: fieldDef[];
 }

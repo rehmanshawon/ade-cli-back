@@ -51,6 +51,10 @@ export class SysRolesService {
   }
 
   async findAll(
+    attributes: string,
+    includes: string,
+    iattributes: string,
+    isDropDown = false,
     page: number,
     size: number,
     field: string,
@@ -75,40 +79,37 @@ export class SysRolesService {
     if (!canRead) throw new UnauthorizedException();
     const data = await this.sys_roles.findAndCountAll({
       order: [['id', 'DESC']],
-      attributes: {
-        exclude: [
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },
-      include: [
-        // { model: SysRoleMenu },
-        // { model: SysRoleTable },
-        {
-          model: SysUsers,
-          attributes: {
-            exclude: [
-              'password',
-              'is_active',
-              'created_at',
-              'created_by',
-              'updated_at',
-              'updated_by',
-              'deleted_at',
-            ],
-          },
-        },
-      ],
+      attributes: attributes ? JSON.parse(attributes) : ['id', 'role_name'],
+      include: [],
       where: condition,
       limit,
       offset,
     });
-    const response = this.helpers.getPagingData(data, page, limit, 'sys_roles');
+    const count = data.count;
+    const plain = data.rows.map((m) =>
+      this.helpers.flattenObject(m.get({ plain: true }), 'sys_roles'),
+    );
+    const response = this.helpers.getPagingData(
+      isDropDown
+        ? {
+            count: data.count,
+            rows: this.helpers.changeSpecificKeyOfObjectArray(
+              data.rows.map((m) => m.get({ plain: true })),
+              JSON.parse(attributes)[1],
+              'label',
+            ),
+          }
+        : { count: count, rows: plain },
+      page,
+      limit,
+      'sys_roles',
+    );
     return response || {};
+    // return this.helpers.changeSpecificKeyOfObjectArray(
+    //   data.rows.map((m) => m.get({ plain: true })),
+    //   JSON.parse(attributes)[1],
+    //   'label',
+    // );
   }
 
   async findOne(id: number, payload: any) {

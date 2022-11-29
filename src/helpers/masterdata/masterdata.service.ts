@@ -558,6 +558,7 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
       attributes: string,
       includes: string,
       iattributes: string,
+      isDropDown = false,
       page: number, 
       size: number, 
       field: string, 
@@ -596,7 +597,16 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
       const plain = data.rows.map((m) =>
       this.helpers.flattenObject(m.get({ plain: true }),'${tableName}'),
     );
-      const response = this.helpers.getPagingData({ count: count, rows: plain }, page, limit,'${tableName}');
+      const response = this.helpers.getPagingData(isDropDown
+        ? {
+            count: data.count,
+            rows: this.helpers.changeSpecificKeyOfObjectArray(
+              data.rows.map((m) => m.get({ plain: true })),
+              JSON.parse(attributes)[1],
+              'label',
+            ),
+          }
+        : { count: count, rows: plain }, page, limit,'${tableName}');
       return response || {};
     
   }
@@ -741,11 +751,11 @@ export class ${modelName}Controller {
     @UseGuards(JwtAuthGuard)
     @Get()
     async findAll(@Request() req) {
-      const { attributes,includes,iattributes, page, size, field, search } = req.query;
+      const { attributes,includes,iattributes, isDropDown,page, size, field, search } = req.query;
 
       return await this.${await this.helpers.uncapitalizeFirstLetter(
         modelName,
-      )}Service.findAll(attributes, includes, iattributes, page, size, field, search,req.user);
+      )}Service.findAll(attributes, includes, iattributes, isDropDown, page, size, field, search,req.user);
     }
 
     @UseGuards(JwtAuthGuard)

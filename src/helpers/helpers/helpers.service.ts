@@ -206,6 +206,24 @@ export class HelpersService {
     return newArray;
   };
 
+  changeSpecificKeyOfObjectArray = (arr, changingWord, changeWith) => {
+    const newArray = [];
+    arr.forEach((obj) => {
+      const newObj = {};
+      const keys = Object.keys(obj);
+      keys.forEach((key) => {
+        Object.assign(newObj, {
+          ...obj,
+          [changeWith]: obj[changingWord],
+        });
+        delete newObj[changingWord];
+      });
+      newArray.push(newObj);
+    });
+
+    return newArray;
+  };
+
   // prefixSpecificValueOfObjectArray(arr,keyValueToChange, prefixWord, prefixWith){
   //   const newArray = [];
 

@@ -94,6 +94,14 @@ export class SysMastersService {
     });
 
     const myTable = createSysMastersDto.query_tables[0].fieldList.slice();
+    const forTableDropDownFields = createSysMastersDto.query_tables
+      .slice(1)
+      .map((m) => m.dropdownField);
+    // const dropdownFieldCount=createSysMastersDto.query_tables.map
+    let foreignDropDownCount = 0;
+    createSysMastersDto.query_tables.slice(1).forEach((m) => {
+      if (m.dropdownField) foreignDropDownCount++;
+    });
 
     const paramsArray = [];
 
@@ -117,7 +125,14 @@ export class SysMastersService {
             id: myTable[n].foreign_table_id,
           },
         });
-        fieldApiStrig = `/api/v1/${foreignTableRecord.table_name}`;
+        const dropdownAttr = [
+          'id',
+          forTableDropDownFields[foreignDropDownCount - 1],
+        ];
+        fieldApiStrig = `/api/v1/${
+          foreignTableRecord.table_name
+        }?attributes=${encodeURIComponent(JSON.stringify(dropdownAttr))}`;
+        console.log(fieldApiStrig);
       }
       const fieldDef = {
         fieldName: myTable[n].fieldName,
