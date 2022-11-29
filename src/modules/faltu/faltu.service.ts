@@ -75,8 +75,8 @@ export class FaltuService {
     if (!canRead) throw new UnauthorizedException();
     const data = await this.faltu.findAndCountAll({
       order: [['id', 'DESC']],
-      // attributes: JSON.parse(attributes) || [],
-      // include: [],
+      attributes: attributes ? JSON.parse(attributes) : null,
+      include: [],
       where: condition,
       limit,
       offset,

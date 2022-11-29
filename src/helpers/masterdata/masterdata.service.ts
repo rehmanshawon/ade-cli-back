@@ -586,7 +586,7 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
       if (!canRead) throw new UnauthorizedException();
       const data = await this.${tableName}.findAndCountAll({        
         order: [['id', 'DESC']],
-        attributes: JSON.parse(attributes),
+        attributes: attributes ? JSON.parse(attributes) : null,
         include: [${arrayOfIncludes}],
         where: condition,
         limit,
