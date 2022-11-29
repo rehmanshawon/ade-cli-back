@@ -93,33 +93,61 @@ export class SysMastersService {
       return { tableName: tbname, fieldList: fields };
     });
 
-    const createParams = createSysMastersDto.query_tables.map((m, i) => {
-      const paramsArray = [];
-      if (i === 0) {
-        for (let n = 0; n < m.fieldList.length; n++) {
-          const fieldDef = {
-            fieldName: m.fieldList[n].fieldName,
-            fieldType: m.fieldList[n].fieldType,
-            fieldLabel: m.fieldList[n].columnName,
-            foreignKey: m.fieldList[n].foreignKey,
-            fieldApi: m.fieldList[n].foreignKey,
-          };
-        }
+    const myTable = createSysMastersDto.query_tables[0].fieldList.slice();
+
+    const paramsArray = [];
+
+    for (let n = 0; n < myTable.length; n++) {
+      if (
+        myTable[n].fieldName === 'id' ||
+        myTable[n].fieldName === 'is_active' ||
+        myTable[n].fieldName === 'created_by' ||
+        myTable[n].fieldName === 'updated_by' ||
+        myTable[n].fieldName === 'deleted_at' ||
+        myTable[n].fieldName === 'created_at' ||
+        myTable[n].fieldName === 'updated_at'
+      ) {
+        continue;
       }
-      //m.fieldList[0].
+      let fieldApiStrig = '';
+      if (myTable[n].foreignKey && myTable[n].foreign_table_id) {
+        // find the table first using the foreign_table_id
+        const foreignTableRecord = await this.sysTables.findOne({
+          where: {
+            id: myTable[n].foreign_table_id,
+          },
+        });
+        fieldApiStrig = `/api/v1/${foreignTableRecord.table_name}`;
+      }
+      const fieldDef = {
+        fieldName: myTable[n].fieldName,
+        fieldType: myTable[n].fieldType,
+        fieldLabel: myTable[n].columnName,
+        foreignKey: myTable[n].foreignKey,
+        fieldApi: fieldApiStrig,
+      };
+      paramsArray.push(fieldDef);
+    }
+
+    // console.log(paramsArray);
+    await this.sys_masters.create({
+      ...createSysMastersDto,
+      grid_params: JSON.stringify(dto),
+      grid_api: gridUrl,
+      grid_columns: JSON.stringify(tableColumns),
+      created_by: payload.sub,
     });
     const response = await this.sys_masters.create({
       ...createSysMastersDto,
-      //grid_params: JSON.stringify(createSysMastersDto.query_tables),
-      grid_params: JSON.stringify(dto),
-      grid_api: gridUrl,
+      slug_type: 'create',
+      create_params: JSON.stringify(paramsArray),
       create_api: createUrl,
       grid_columns: JSON.stringify(tableColumns),
       created_by: payload.sub,
     });
     //return decodeURIComponent(gridUrl);
-    //return 'one sys_master added!';
-    return dto;
+    return 'two records added!';
+    //return paramsArray;
   }
 
   async findAll(
@@ -226,11 +254,7 @@ export class SysMastersService {
         slug_type: slug_type,
         is_active: 1,
       },
-      attributes: [
-        `${slug_type}_params`,
-        `${slug_type}_api`,
-        `${slug_type}_columns`,
-      ],
+      attributes: [`${slug_type}_params`, `${slug_type}_api`, 'grid_columns'],
       include: [],
     });
     return response || {};
