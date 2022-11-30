@@ -613,7 +613,7 @@ import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
 
     async findOne(id: number, payload: any) {       
         const thisTableInfo = await this.sysTables.findOne({
-        where: { table_name: '${tableName},is_active:true,' },
+        where: { table_name: '${tableName}',is_active:true, },
       });
       if (!thisTableInfo) throw new ForbiddenException();
       const canRead = await this.role_table.findOne({
