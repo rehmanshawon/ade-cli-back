@@ -70,6 +70,8 @@ export class SysMastersService {
     //console.log(JSON.stringify(foreignTables[0].fieldList[0].));
     const gridUrl = `/api/v1/${createSysMastersDto.query_tables[0].tableName}?attributes=${attributes}&includes=${foreignTables}&iattributes=${foreignAttributes}`;
     const createUrl = `/api/v1/${createSysMastersDto.query_tables[0].tableName}`;
+    const updateUrl = `/api/v1/${createSysMastersDto.query_tables[0].tableName}`;
+    const getUpdateUrl = `/api/v1/${createSysMastersDto.query_tables[0].tableName}`;
 
     // const queryString = decodeURIComponent(gridUrl.replace(/\+/g, ' ')).split(
     //   '?',
@@ -152,11 +154,20 @@ export class SysMastersService {
       grid_columns: JSON.stringify(tableColumns),
       created_by: payload.sub,
     });
-    const response = await this.sys_masters.create({
+    await this.sys_masters.create({
       ...createSysMastersDto,
       slug_type: 'create',
       create_params: JSON.stringify(paramsArray),
       create_api: createUrl,
+      grid_columns: JSON.stringify(tableColumns),
+      created_by: payload.sub,
+    });
+    const response = await this.sys_masters.create({
+      ...createSysMastersDto,
+      slug_type: 'update',
+      grid_api: getUpdateUrl,
+      update_params: JSON.stringify(paramsArray),
+      update_api: updateUrl,
       grid_columns: JSON.stringify(tableColumns),
       created_by: payload.sub,
     });
