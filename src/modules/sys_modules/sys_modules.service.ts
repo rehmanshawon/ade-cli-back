@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import {SysMenuPriviledge} from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
+import { SysMenuPriviledge } from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
 
 import { SysUserModule } from 'src/modules/sys_user_module/sys_user_module.model';
 
@@ -88,30 +88,18 @@ export class SysModulesService {
           'deleted_at',
         ],
       },
-      include: [{model:SysMenuPriviledge,attributes: {
-        exclude: [
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },},
-        {
-          model: SysMenus,
-          attributes: {
-            exclude: [
-              'is_active',
-              'created_at',
-              'created_by',
-              'updated_at',
-              'updated_by',
-              'deleted_at',
-            ],
-          },
-        },
-      ],
+      // include: [{model:SysMenuPriviledge,attributes: {
+      //   exclude: [
+      //     'is_active',
+      //     'created_at',
+      //     'created_by',
+      //     'updated_at',
+      //     'updated_by',
+      //     'deleted_at',
+      //   ],
+      // },},
+
+      // ],
       where: condition,
       limit,
       offset,
@@ -154,16 +142,20 @@ export class SysModulesService {
         id,
         is_active: 1,
       },
-      include: [{model:SysMenuPriviledge,attributes: {
-        exclude: [
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },},
+      include: [
+        {
+          model: SysMenuPriviledge,
+          attributes: {
+            exclude: [
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
+        },
         //{ model: SysUserModule },
         {
           model: SysMenus,
