@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+import {SysMenuPriviledge} from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
+
 import { SysUserModule } from 'src/modules/sys_user_module/sys_user_module.model';
 
 import { SysMenus } from 'src/modules/sys_menus/sys_menus.model';
@@ -86,7 +88,16 @@ export class SysModulesService {
           'deleted_at',
         ],
       },
-      include: [
+      include: [{model:SysMenuPriviledge,attributes: {
+        exclude: [
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },},
         {
           model: SysMenus,
           attributes: {
@@ -143,7 +154,16 @@ export class SysModulesService {
         id,
         is_active: 1,
       },
-      include: [
+      include: [{model:SysMenuPriviledge,attributes: {
+        exclude: [
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },},
         //{ model: SysUserModule },
         {
           model: SysMenus,

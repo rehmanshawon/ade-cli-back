@@ -11,31 +11,19 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-export class CreateSysMenusDto {
-  @IsString()
-  menu_name: string;
-
-  @IsString()
+export class CreateSysMenuPriviledgeDto {
+  @IsNumber()
   @IsOptional()
-  menu_url: string;
-
-  @IsString()
-  @IsOptional()
-  menu_icon_url: string;
+  menu_id: number;
 
   @IsNumber()
   @IsOptional()
-  menu_order: number;
+  role_id: number;
 
   @IsNumber()
   @IsOptional()
-  parent_menu: number;
-
-  // @IsNumber()
-  // @IsOptional()
-  // module_id: number;
-
-  @IsBoolean()
-  @IsOptional()
-  createMaster: boolean;
+  module_id: number;
 }
+// export class CreateSysMenuPriviledgesDto {
+//   priviledges: CreateSysMenuPriviledgeDto[];
+// }

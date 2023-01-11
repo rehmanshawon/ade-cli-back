@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+import { SysMenuPriviledge } from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
+
 import { SysRoleMenu } from 'src/modules/sys_role_menu/sys_role_menu.model';
 
 import {
@@ -59,15 +61,19 @@ export class SysMenus extends Model {
   @Column({ type: DataType.DATE })
   deleted_at?: Date;
 
-  @ForeignKey(() => SysModules)
-  @Column({
-    type: DataType.INTEGER,
-  })
-  module_id?: number;
+  // @ForeignKey(() => SysModules)
+  // @Column({
+  //   type: DataType.INTEGER,
+  // })
+  // module_id?: number;
 
-  @BelongsTo(() => SysModules)
-  SysModule?: SysModules;
+  // @BelongsTo(() => SysModules)
+  // SysModule?: SysModules;
 
   @HasMany(() => SysRoleMenu)
   sys_role_menu?: SysRoleMenu[];
+
+	@HasMany(() => SysMenuPriviledge)
+	sys_menu_priviledge?: SysMenuPriviledge[];
+
 }

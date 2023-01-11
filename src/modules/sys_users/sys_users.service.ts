@@ -55,7 +55,7 @@ export class SysUsersService {
       include: [
         {
           model: SysRoles,
-          attributes: attributesInclude.length
+          attributes: attributesInclude?.length
             ? attributesInclude[
                 modelIncludes.indexOf(this.helpers.toSnakeCase('SysRoles'))
               ]

@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+import { SysMenuPriviledge } from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
+
 import { SysRoleMenu } from 'src/modules/sys_role_menu/sys_role_menu.model';
 import slugify from 'slugify';
 
@@ -47,7 +49,7 @@ export class SysMenusService {
 
     const existingMenus = await this.sys_menus.findAll({
       where: {
-        module_id: createSysMenusDto.module_id,
+        //module_id: createSysMenusDto.module_id,
         parent_menu: createSysMenusDto.parent_menu,
       },
     });
@@ -194,7 +196,23 @@ export class SysMenusService {
         id,
         is_active: 1,
       },
-      include: [{ model: SysRoleMenu }, { model: SysModules }],
+      include: [
+        {
+          model: SysMenuPriviledge,
+          attributes: {
+            exclude: [
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
+        },
+        { model: SysRoleMenu },
+        { model: SysModules },
+      ],
     });
     const { limit, offset } = this.helpers.getPagination(0, 1000);
     const response = this.helpers.getPagingData(
@@ -235,7 +253,7 @@ export class SysMenusService {
         ],
       },
       where: {
-        module_id: mid,
+        //module_id: mid,
         parent_menu: pid,
         is_active: 1,
       },

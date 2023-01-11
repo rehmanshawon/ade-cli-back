@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+import { SysMenuPriviledge } from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
+
 import { SysUserModule } from 'src/modules/sys_user_module/sys_user_module.model';
 
 import { SysMenus } from 'src/modules/sys_menus/sys_menus.model';
@@ -54,9 +56,13 @@ export class SysModules extends Model {
   @Column({ type: DataType.DATE })
   deleted_at?: Date;
 
-  @HasMany(() => SysMenus)
-  sys_menus?: SysMenus[];
+  // @HasMany(() => SysMenus)
+  // sys_menus?: SysMenus[];
 
   @HasMany(() => SysUserModule)
   sys_user_module?: SysUserModule[];
+
+	@HasMany(() => SysMenuPriviledge)
+	sys_menu_priviledge?: SysMenuPriviledge[];
+
 }
