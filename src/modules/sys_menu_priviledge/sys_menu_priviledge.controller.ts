@@ -37,15 +37,17 @@ export class SysMenuPriviledgeController {
   @UseGuards(JwtAuthGuard)
   @Get('menus')
   findMenusByRoleModule(@Query() params: any, @Request() req) {
-    const { role_id, module_id } = params;
-    console.log(role_id, module_id);
+    const { role_id, module_id, active } = params;
+    console.log(role_id, module_id, active);
     //return params;
     return this.sysMenuPriviledgeService.findMenusByRoleModule(
       role_id,
       module_id,
+      active,
       req.user,
     );
   }
+
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Request() req) {

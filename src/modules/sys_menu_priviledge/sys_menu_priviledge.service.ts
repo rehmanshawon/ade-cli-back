@@ -66,6 +66,7 @@ export class SysMenuPriviledgeService {
   async findMenusByRoleModule(
     role_id: number,
     module_id: number,
+    active: boolean,
     payload: any,
   ) {
     const thisTableInfo = await this.sysTables.findOne({
@@ -110,6 +111,10 @@ export class SysMenuPriviledgeService {
         console.log(allowed);
         return { ...obj, granted: allowed };
       });
+    if (active) {
+      const allowedMenus = temp.filter((el) => el.granted === true);
+      return this.helpers.treeData(allowedMenus);
+    }
     const menutree = this.helpers.treeData(temp);
     return menutree;
   }
