@@ -7,11 +7,19 @@ import { SysModulesService } from './sys_modules.service';
 import { SysModules } from './sys_modules.model';
 import { SysRoleTable } from '../sys_role_table/sys_role_table.model';
 import { SysTables } from '../sys_tables/sys_tables.model';
+import { SysRoleModule } from '../sys_role_module/sys_role_module.model';
 
 @Module({
-  imports: [SequelizeModule.forFeature([SysModules, SysRoleTable, SysTables]), HelpersModule],
+  imports: [
+    SequelizeModule.forFeature([
+      SysModules,
+      SysRoleTable,
+      SysTables,
+      SysRoleModule,
+    ]),
+    HelpersModule,
+  ],
   providers: [SysModulesService],
   controllers: [SysModulesController],
 })
 export class SysModulesModule {}
-    

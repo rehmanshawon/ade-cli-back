@@ -30,6 +30,8 @@ export class SysModulesService {
     private role_table: typeof SysRoleTable,
     @InjectModel(SysTables)
     private sysTables: typeof SysTables,
+    @InjectModel(SysRoleModule)
+    private sysRoleModule: typeof SysRoleModule,
     private helpers: HelpersService,
   ) {}
   async create(createSysModulesDto: CreateSysModulesDto, payload: any) {
@@ -90,34 +92,29 @@ export class SysModulesService {
           'deleted_at',
         ],
       },
-      // include: [{model:SysRoleModule,attributes: {
-      //   exclude: [
-      //     'is_active',
-      //     'created_at',
-      //     'created_by',
-      //     'updated_at',
-      //     'updated_by',
-      //     'deleted_at',
-      //   ],
-      // },},{model:SysMenuPriviledge,attributes: {
-      //   exclude: [
-      //     'is_active',
-      //     'created_at',
-      //     'created_by',
-      //     'updated_at',
-      //     'updated_by',
-      //     'deleted_at',
-      //   ],
-      // },},
-
-      // ],
       where: condition,
       limit,
       offset,
     });
 
+    const allowedModules = await this.sysRoleModule.findAll({
+      where: {
+        sys_roles_id: 482,
+        accesible: 1,
+      },
+      attributes: ['sys_modules_id'],
+    });
+    //
+    const plainData = data.rows.map((m) => m.get({ plain: true }));
+    const plainModules = allowedModules.map((m) => m.get({ plain: true }));
+    const plainModulIds = plainModules.map((m) => m.sys_modules_id);
+    const temp = plainData.filter((ele) => {
+      const allowed = plainModulIds.includes(ele.id);
+      if (allowed) return ele;
+    });
+    //console.log(temp);
     const response = this.helpers.getPagingData(
-      data,
+      { count: temp.length, rows: temp },
       page,
       limit,
       'sys_modules',
