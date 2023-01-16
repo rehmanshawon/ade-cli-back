@@ -1,8 +1,8 @@
+/* eslint-disable prettier/prettier */
 import { SysMastersModule } from 'src/modules/sys_masters/sys_masters.module';
 import { SysMenuPriviledgeModule } from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.module';
 
-import {SysMenuPriviledge} from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
-
+import { SysMenuPriviledge } from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
 
 import { SysMasters } from 'src/modules/sys_masters/sys_masters.model';
 
@@ -78,7 +78,8 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [SysMenuPriviledge,
+      models: [
+        SysMenuPriviledge,
         SysMasters,
         SysUserModule,
         SysRoleMenu,
@@ -92,7 +93,8 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       ],
     }),
     AuthModule,
-    CreateTableModule,SysMenuPriviledgeModule,
+    CreateTableModule,
+    SysMenuPriviledgeModule,
     SysMastersModule,
     MasterDataModule,
     SysUserModuleModule,

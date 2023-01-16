@@ -10,20 +10,21 @@ import {
   IsDecimal,
   MaxLength,
   MinLength,
-} from 'class-validator'
-;
+} from 'class-validator';
 export class CreateSysUsersDto {
-@IsString()
-user_name:string;
+  @IsString()
+  @IsOptional()
+  user_name: string;
 
-@IsString()
-email:string;
+  @IsString()
+  @IsOptional()
+  email: string;
 
-@IsString()
-password:string;
+  @IsString()
+  @IsOptional()
+  password: string;
 
-@IsNumber()
-@IsOptional()
-role_id:number;
-
+  @IsNumber()
+  @IsOptional()
+  role_id: number;
 }
