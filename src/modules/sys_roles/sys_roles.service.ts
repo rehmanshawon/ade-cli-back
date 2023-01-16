@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
-import {SysRoleModule} from 'src/modules/sys_role_module/sys_role_module.model';
+import { SysRoleModule } from 'src/modules/sys_role_module/sys_role_module.model';
 
-import {SysMenuPriviledge} from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
+import { SysMenuPriviledge } from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
 
 import { SysRoleMenu } from 'src/modules/sys_role_menu/sys_role_menu.model';
 
@@ -21,6 +21,7 @@ import sequelize from 'sequelize';
 import { HelpersService } from 'src/helpers/helpers/helpers.service';
 import { SysRoles } from './sys_roles.model';
 import { CreateSysRolesDto } from './dto/create-sys_roles.dto';
+import { CreateSysRoleModuleDto } from '../sys_role_module/dto/create-sys_role_module.dto';
 import { UpdateSysRolesDto } from './dto/update-sys_roles.dto';
 import { SysTables } from '../sys_tables/sys_tables.model';
 @Injectable()
@@ -32,6 +33,8 @@ export class SysRolesService {
     private role_table: typeof SysRoleTable,
     @InjectModel(SysTables)
     private sysTables: typeof SysTables,
+    @InjectModel(SysRoleModule)
+    private sysRoleModule: typeof SysRoleModule,
     private helpers: HelpersService,
   ) {}
   async create(createSysRolesDto: CreateSysRolesDto, payload: any) {
@@ -51,6 +54,18 @@ export class SysRolesService {
       ...createSysRolesDto,
       created_by: payload.sub,
     });
+    //console.log(response.get({ plain: true }));
+    const { id, role_name } = response.get({ plain: true });
+    const createSysRoleModuleDto = [];
+    for (let i = 0; i < createSysRolesDto.modules.length; i++) {
+      createSysRoleModuleDto.push({
+        accesible: 1,
+        sys_roles_id: id,
+        sys_modules_id: createSysRolesDto.modules[i],
+      });
+    }
+    await this.sysRoleModule.bulkCreate(createSysRoleModuleDto);
+
     return 'data added!';
   }
 
@@ -84,25 +99,34 @@ export class SysRolesService {
     const data = await this.sys_roles.findAndCountAll({
       order: [['id', 'DESC']],
       attributes: attributes ? JSON.parse(attributes) : ['id', 'role_name'],
-      include: [{model:SysRoleModule,attributes: {
-        exclude: [
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },},{model:SysMenuPriviledge,attributes: {
-        exclude: [
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },},],
+      include: [
+        {
+          model: SysRoleModule,
+          attributes: {
+            exclude: [
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
+        },
+        {
+          model: SysMenuPriviledge,
+          attributes: {
+            exclude: [
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
+        },
+      ],
       where: condition,
       limit,
       offset,
@@ -162,25 +186,33 @@ export class SysRolesService {
         id,
         is_active: 1,
       },
-      include: [{model:SysRoleModule,attributes: {
-        exclude: [
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },},{model:SysMenuPriviledge,attributes: {
-        exclude: [
-          'is_active',
-          'created_at',
-          'created_by',
-          'updated_at',
-          'updated_by',
-          'deleted_at',
-        ],
-      },},
+      include: [
+        {
+          model: SysRoleModule,
+          attributes: {
+            exclude: [
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
+        },
+        {
+          model: SysMenuPriviledge,
+          attributes: {
+            exclude: [
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
+        },
         // { model: SysRoleMenu },
         // { model: SysRoleTable },
         {

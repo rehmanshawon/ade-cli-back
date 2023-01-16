@@ -10,10 +10,10 @@ import {
   IsDecimal,
   MaxLength,
   MinLength,
-} from 'class-validator'
-;
+} from 'class-validator';
 export class CreateSysRolesDto {
-@IsString()
-role_name:string;
+  @IsString()
+  role_name: string;
 
+  modules: number[];
 }
