@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+import { SysRoleModule } from 'src/modules/sys_role_module/sys_role_module.model';
+
 import { SysMenuPriviledge } from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
 
 import { SysRoleMenu } from 'src/modules/sys_role_menu/sys_role_menu.model';
@@ -63,5 +65,9 @@ export class SysRoles extends Model {
 
 	@HasMany(() => SysMenuPriviledge)
 	sys_menu_priviledge?: SysMenuPriviledge[];
+
+
+	@HasMany(() => SysRoleModule)
+	sys_role_module?: SysRoleModule[];
 
 }

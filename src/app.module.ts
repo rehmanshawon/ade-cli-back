@@ -1,4 +1,8 @@
 import { SysMastersModule } from 'src/modules/sys_masters/sys_masters.module';
+import { SysRoleModuleModule } from 'src/modules/sys_role_module/sys_role_module.module';
+
+import {SysRoleModule} from 'src/modules/sys_role_module/sys_role_module.model';
+
 import { SysMenuPriviledgeModule } from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.module';
 
 import {SysMenuPriviledge} from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
@@ -78,7 +82,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      models: [SysMenuPriviledge,
+      models: [SysRoleModule,SysMenuPriviledge,
         SysMasters,
         SysUserModule,
         SysRoleMenu,
@@ -92,7 +96,7 @@ import { MasterDataModule } from './helpers/masterdata/masterdata.module';
       ],
     }),
     AuthModule,
-    CreateTableModule,SysMenuPriviledgeModule,
+    CreateTableModule,SysRoleModuleModule,SysMenuPriviledgeModule,
     SysMastersModule,
     MasterDataModule,
     SysUserModuleModule,

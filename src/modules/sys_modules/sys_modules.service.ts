@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+import { SysRoleModule } from 'src/modules/sys_role_module/sys_role_module.model';
+
 import { SysMenuPriviledge } from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
 
 import { SysUserModule } from 'src/modules/sys_user_module/sys_user_module.model';
@@ -88,7 +90,16 @@ export class SysModulesService {
           'deleted_at',
         ],
       },
-      // include: [{model:SysMenuPriviledge,attributes: {
+      // include: [{model:SysRoleModule,attributes: {
+      //   exclude: [
+      //     'is_active',
+      //     'created_at',
+      //     'created_by',
+      //     'updated_at',
+      //     'updated_by',
+      //     'deleted_at',
+      //   ],
+      // },},{model:SysMenuPriviledge,attributes: {
       //   exclude: [
       //     'is_active',
       //     'created_at',
@@ -143,6 +154,19 @@ export class SysModulesService {
         is_active: 1,
       },
       include: [
+        {
+          model: SysRoleModule,
+          attributes: {
+            exclude: [
+              'is_active',
+              'created_at',
+              'created_by',
+              'updated_at',
+              'updated_by',
+              'deleted_at',
+            ],
+          },
+        },
         {
           model: SysMenuPriviledge,
           attributes: {

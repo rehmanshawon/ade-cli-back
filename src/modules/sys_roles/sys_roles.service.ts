@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+import {SysRoleModule} from 'src/modules/sys_role_module/sys_role_module.model';
+
 import {SysMenuPriviledge} from 'src/modules/sys_menu_priviledge/sys_menu_priviledge.model';
 
 import { SysRoleMenu } from 'src/modules/sys_role_menu/sys_role_menu.model';
@@ -82,7 +84,16 @@ export class SysRolesService {
     const data = await this.sys_roles.findAndCountAll({
       order: [['id', 'DESC']],
       attributes: attributes ? JSON.parse(attributes) : ['id', 'role_name'],
-      include: [{model:SysMenuPriviledge,attributes: {
+      include: [{model:SysRoleModule,attributes: {
+        exclude: [
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },},{model:SysMenuPriviledge,attributes: {
         exclude: [
           'is_active',
           'created_at',
@@ -151,7 +162,16 @@ export class SysRolesService {
         id,
         is_active: 1,
       },
-      include: [{model:SysMenuPriviledge,attributes: {
+      include: [{model:SysRoleModule,attributes: {
+        exclude: [
+          'is_active',
+          'created_at',
+          'created_by',
+          'updated_at',
+          'updated_by',
+          'deleted_at',
+        ],
+      },},{model:SysMenuPriviledge,attributes: {
         exclude: [
           'is_active',
           'created_at',
