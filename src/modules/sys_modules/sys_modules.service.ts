@@ -99,7 +99,7 @@ export class SysModulesService {
 
     const allowedModules = await this.sysRoleModule.findAll({
       where: {
-        sys_roles_id: 482,
+        sys_roles_id: payload.role,
         accesible: 1,
       },
       attributes: ['sys_modules_id'],
